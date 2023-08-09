@@ -21,7 +21,7 @@ enum KEYWORDS {
 #define RESIZE_SCREEN_WIDTH 20
 #define RESIZE_SCREEN_HEIGHT 20
 
-uint8_t ram[RAM_SIZE];
+uint8_t ram[RAM_SIZE] = {};
 
 uint8_t registerFile[16] = {};
 
@@ -36,7 +36,7 @@ sf::RenderWindow window(sf::VideoMode(SCREEN_WIDTH * RESIZE_SCREEN_WIDTH, SCREEN
 
 sf::RectangleShape pixels[SCREEN_WIDTH * SCREEN_HEIGHT];
 
-uint16_t ramAddr = 0x0052;
+uint16_t ramAddr;
 
 //translate decimal to hex
 std::string toHex(uint16_t dec) {
@@ -54,12 +54,6 @@ void toBin(unsigned n)
 
 	/* step 2 */
 	std::cout << n % 2;
-}
-
-void clear_RAM() {
-	for (int i = 0; i < RAM_SIZE; i++) {
-		ram[i] = 0x0;
-	}
 }
 
 void print_RAM() {
@@ -86,9 +80,14 @@ void clear_Registers() {
 	soundTimer = 0;
 }
 
-std::pair<uint8_t, uint8_t> getAddress(uint16_t instruction) {
+std::pair<uint16_t, uint16_t> getAddress(uint16_t instruction) {
 
-	std::pair<uint8_t, uint8_t> address;
+	std::pair<uint16_t, uint16_t> address;
+
+	address.first = instruction & 0x0f00;
+	address.first = address.first >> 8;
+	address.second = instruction & 0x00f0;
+	address.second = address.second >> 4;
 
 	return address;
 }
@@ -110,7 +109,7 @@ void executeCommand(uint16_t instruction) {
 		    if (instruction == 0x00EE) {
 				programCounter = ram[stackPointer] & 0x00ff;
 				stackPointer -= 0x01;
-				programCounter = ram[stackPointer] & 0xff00;
+				programCounter |= ram[stackPointer] & 0xff00;
 				stackPointer -= 0x01;
 			}
 
@@ -147,6 +146,7 @@ void executeCommand(uint16_t instruction) {
 			std::cout << "SE 4XNN\n";
 			//SNE VX, NN — 4XNN
 			registerX = instruction & 0x0f00;
+			registerX >>= 8;
 			value = instruction & 0x00ff;
 
 			if (registerFile[registerX] != value) {
@@ -156,10 +156,9 @@ void executeCommand(uint16_t instruction) {
 		case 0x5000:
 			//SE VX, VY — 5XY0
 			std::cout << "SE 5XY0\n";
-			registerX = instruction & 0x0f00;
-			registerY = instruction & 0x00f0;
+			regAddress = getAddress(instruction);
 
-			if (registerFile[registerX] == registerFile[registerY]) {
+			if (registerFile[regAddress.first] == registerFile[regAddress.second]) {
 				programCounter += 0x02;
 			}
 			break;
@@ -238,29 +237,62 @@ void executeCommand(uint16_t instruction) {
 				//ADD VX, VY — 8XY4
 				case 0x0004:
 					std::cout << "ADD 8XY4 " << toHex(instruction) << "\n";
-					registerX = instruction & 0x0f00;
-					registerX = registerX >> 8;
-					registerY = instruction & 0x00f0;
-					registerY = registerY >> 4;
+					
+					regAddress = getAddress(instruction);
 
-					if (registerFile[registerX] + registerFile[registerY] > 0xff) {
+					if (registerFile[regAddress.first] + registerFile[regAddress.second] > 0xff) {
 						registerFile[0xf] = 1;
 					}
 					else{
 						registerFile[0xf] = 0;
 					}
-					registerFile[registerX] += registerFile[registerY];
+					registerFile[regAddress.first] += registerFile[regAddress.second];
 				break;
 				//SUB VX, VY — 8XY5
 				case 0x0005:
-					 registerX = instruction & 0x0f00;
-					 registerY = instruction & 0x00f0;
-
-					registerFile[registerX] -= registerFile[registerY];
+					 
+					regAddress = getAddress(instruction);
+					
+					if (registerFile[regAddress.first] + registerFile[regAddress.second] > 0xff) {
+						registerFile[0xf] = 1;
+					}
+					else {
+						registerFile[0xf] = 0;
+					}
+					registerFile[regAddress.first] -= registerFile[regAddress.second];
 				break;
 				//SHR VX {, VY} — 8XY6
+				case 0x0006:
+
+					registerX = instruction & 0x0f00;
+					registerX >>= 8;
+
+					registerFile[registerX] >>= 1;
+					registerFile[15] = registerFile[registerX] & 0x01;
+
+				break;
 				//SUBN VX, VY — 8XY7
+				case 0x0007:
+					regAddress = getAddress(instruction);
+
+					if (registerFile[regAddress.first] + registerFile[regAddress.second] > 0xff) {
+						registerFile[0xf] = 1;
+					}
+					else {
+						registerFile[0xf] = 0;
+					}
+					registerFile[regAddress.second] -= registerFile[regAddress.first];
+				break;
+				case 0x000E:
 				//SHL VX {, VY} — 8XYE
+					registerX = instruction & 0x0f00;
+					registerX >>= 8;
+
+					registerFile[registerX] <<= 1;
+					registerFile[15] = registerFile[registerX] & 0x80;
+
+				break;
+
 
 			}
 		#pragma endregion
@@ -269,15 +301,15 @@ void executeCommand(uint16_t instruction) {
 		break;
 		case 0x9000:
 			//SNE VX, VY — 9XY0
-			registerX = instruction & 0x0f00;
-			registerY = instruction & 0x00f0;
+			regAddress = getAddress(instruction);
 
-			if (registerFile[registerX] > registerFile[registerY]){
+			if (registerFile[regAddress.first] != registerFile[regAddress.second]){
 				programCounter += 0x02;
 			}
 		break;
 		case 0xA000:
 			//LD I, NNN — ANNN
+			std::cout << "LDI ANNN " << toHex(instruction) << "\n";
 			indexRegister = instruction & 0x0fff;
 		break;
 		
@@ -295,26 +327,68 @@ void executeCommand(uint16_t instruction) {
 		break;
 		case 0xD000:
 		{
+			std::cout << "DRW DXYN " << toHex(instruction) << "\n";
 			//DRW VX, VY, N — DXYN
-			registerX = instruction & 0x0f00;
-			registerY = instruction & 0x00f0;
+			regAddress = getAddress(instruction);
 			value = instruction & 0x000f;
+			
+			uint16_t Vx = registerFile[regAddress.first];
+			uint16_t Vy = registerFile[regAddress.second];
 
 			//index = y * width + x
+			uint8_t colorChecker = 0x80;
+			uint16_t ramSpritePos = indexRegister;
 
-			int index = registerFile[registerY] * SCREEN_WIDTH + registerFile[registerX];
+			for (size_t i = 0; i < 5*8; i++){
+				
+				size_t startingPos = Vy * SCREEN_WIDTH + Vx;
 
-			pixels[index].setFillColor(sf::Color::White);
+				if ((ram[ramSpritePos] & colorChecker) == colorChecker) {
+
+					pixels[startingPos].setFillColor(sf::Color::White);
+				}
+				
+				
+				colorChecker >>= 1;
+				Vx += 1;
+				if (colorChecker == 0) {
+					colorChecker = 0x80;
+					ramSpritePos += 1;
+					Vx = registerFile[regAddress.first];
+					Vy += 1;
+				}
+			
+			}
+			
 		}
 		break;
 		case 0xE000:
 			//SKP VX — EX9E
+			if ((instruction & 0x009E) == 0x009E) {
+
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)){
+					programCounter += 2;
+				}
+			}
 			//SKNP VX — EXA1
 		break;
 
 		case 0xF000:
 			//LD VX, DT — FX07
+			if ((instruction & 0x0007) == 0x0007) {
+				registerX = instruction & 0x0f00;
+				registerX >>= 8;
+				
+				registerFile[registerX] = delayTimer;
+			}
 			//LD VX, K — FX0A
+			if (((instruction & 0x000A) == 0x000A)) {
+				registerX = instruction & 0x0f00;
+				registerX >>= 8;
+				while (sf::Keyboard::isKeyPressed(sf::Keyboard::D) == false);
+				registerFile[registerX] = 0xAD;
+				
+			}
 			//LD DT, VX — FX15
 			//LD ST, VX — FX18
 			//ADD I, VX — FX1E
@@ -399,33 +473,19 @@ int main() {
 	//RandomAccessMemory t;
 	//t.loadFromFile();
 
-	clear_RAM();
+	
 	clear_Registers();
 
 	uint16_t instruction = 0;
 
-	programCounter = 0x50;
-
-	//CLR
-	test_ProgramRam(CLR);
-	//v0 = 1;
-	test_ProgramRam(0x600f);
-	//v1 = 2;
-	test_ProgramRam(0x61ff);
-	
-	test_ProgramRam(0x8014);
-	
-	
-
-	
-	uint8_t char_ROM[] = {
-		0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
-		0x20, 0x60, 0x20, 0x20, 0x70, // 1
-		0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
-		0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
-		0x90, 0x90, 0xF0, 0x10, 0x10, // 4
-		0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
-		0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+	uint8_t char_ROM[] = {					//adr
+		0xF0, 0x90, 0x90, 0x90, 0xF0, // 0    0
+		0x20, 0x60, 0x20, 0x20, 0x70, // 1    5
+		0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2    a
+		0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3    f
+		0x90, 0x90, 0xF0, 0x10, 0x10, // 4    
+		0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5    
+		0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6    
 		0xF0, 0x10, 0x20, 0x40, 0x40, // 7
 		0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
 		0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
@@ -435,11 +495,49 @@ int main() {
 		0xE0, 0x90, 0x90, 0x90, 0xE0, // D
 		0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
 		0xF0, 0x80, 0xF0, 0x80, 0x80, // F
+		0x90, 0x90, 0xF0, 0x90, 0x90, // H
 	};
 
-	for (size_t i = 0; i < 80; i++){
+	size_t arrayLength = sizeof(char_ROM) / sizeof(char_ROM[0]);
+
+	for (size_t i = 0; i < arrayLength; i++) {
 		ram[i] = char_ROM[i];
 	}
+
+	programCounter = (uint16_t)arrayLength;
+	ramAddr = programCounter;
+	//CLR
+	test_ProgramRam(CLR);
+
+	uint16_t spriteIndex = 0xA000;
+	uint16_t spriteX = 0x6000;
+	uint16_t spriteY = 0x6100;
+	//I = 5 load spr 1
+
+	for (size_t i = 0; i < 17; i++) {
+
+		test_ProgramRam(spriteIndex);
+		//V0 = 2
+		test_ProgramRam(spriteX);
+		//V1 = 5
+		test_ProgramRam(spriteY);
+		//DRW
+		test_ProgramRam(0xD010);
+
+		spriteX += 0x0005;
+		if (spriteX > 0x6028) {
+			spriteX = 0x6000;
+			spriteY += 0x0006;
+		}
+
+		spriteIndex += 0x0005;
+	}
+
+	test_ProgramRam(0xF50A);
+	
+
+	
+	
 
 
 	//load rom test to ram
@@ -481,11 +579,12 @@ int main() {
 	stackPointer_text.setCharacterSize(24);
 	stackPointer_text.setFillColor(sf::Color::Black);
 
-	sf::Text ramPointer_text;
-	ramPointer_text.setFont(font);
-	ramPointer_text.setPosition(150, 80);
-	ramPointer_text.setCharacterSize(24);
-	ramPointer_text.setFillColor(sf::Color::Black);
+	sf::Text indexRegister_tex;
+	indexRegister_tex.setFont(font);
+	indexRegister_tex.setPosition(150, 80);
+	indexRegister_tex.setCharacterSize(24);
+	indexRegister_tex.setFillColor(sf::Color::Black);
+
 	
 	createPixels();
 
@@ -524,9 +623,9 @@ int main() {
 		stackPointer_text.setString("SP:"+toHex(stackPointer));
 		windowInfo.draw(stackPointer_text);
 
-		ramPointer_text.setString("RAM[PC]" + toHex(ram[programCounter]));
+		indexRegister_tex.setString("Indexreg:" + toHex(indexRegister));
 			
-		windowInfo.draw(ramPointer_text);
+		windowInfo.draw(indexRegister_tex);
 
 
 		for (size_t i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i++){

@@ -10,24 +10,26 @@ public:
 	uint8_t memory[200] = {};
 
 private:
-	void loadToMemory(std::string source);
+	std::string getToken(std::string source);
 	
-	enum KEYWORDS {
-		CLR = 0x00E0,
-		LDC = 0x6000
-	};
-
+	size_t endLine = 0;
 };
 
-void RandomAccessMemory::loadToMemory(std::string source) {
-	size_t endLine = 0;
+std::string RandomAccessMemory::getToken(std::string source) {
+	
+	std::string token;
+
 	while (source.substr(endLine, 1) != ";") {
+		token += source.substr(endLine, 1);
 		endLine++;
 	}
-
 	
-
+	std::cout << "TOKEN : " << token << "\n";
 	std::cout << "END LINE" << endLine << "\n";
+
+	endLine++;
+
+	return token;
 }
 
 void RandomAccessMemory::loadFromFile() {
@@ -46,5 +48,7 @@ void RandomAccessMemory::loadFromFile() {
 	// Close the file
 	MyReadFile.close();
 
-	loadToMemory(output);
+	while (endLine < output.length()) {
+		std::string token = getToken(output);
+	}
 }
