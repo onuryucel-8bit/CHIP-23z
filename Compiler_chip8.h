@@ -4,7 +4,8 @@
 #include<fstream>
 #include<string>
 
-class RandomAccessMemory {
+
+class Compiler_chip8 {
 public:
 	void loadFromFile();
 	uint8_t memory[200] = {};
@@ -15,7 +16,7 @@ private:
 	size_t endLine = 0;
 };
 
-std::string RandomAccessMemory::getToken(std::string source) {
+std::string Compiler_chip8::getToken(std::string source) {
 	
 	std::string token;
 
@@ -32,7 +33,7 @@ std::string RandomAccessMemory::getToken(std::string source) {
 	return token;
 }
 
-void RandomAccessMemory::loadFromFile() {
+void Compiler_chip8::loadFromFile() {
 	// Create a text string, which is used to output the text file
 	std::string myText;
 	std::string output = "";
