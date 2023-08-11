@@ -4,7 +4,7 @@
 #include<fstream>
 #include<string>
 
-
+/*
 class Compiler_chip8 {
 public:
 	void loadFromFile();
@@ -52,4 +52,4 @@ void Compiler_chip8::loadFromFile() {
 	while (endLine < output.length()) {
 		std::string token = getToken(output);
 	}
-}
+}*/
