@@ -3,36 +3,17 @@
 
 Chip8::Chip8() {
 
-	uint8_t char_ROM[] = {					//adr
-		0xF0, 0x90, 0x90, 0x90, 0xF0, // 0    0
-		0x20, 0x60, 0x20, 0x20, 0x70, // 1    5
-		0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2    a
-		0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3    f
-		0x90, 0x90, 0xF0, 0x10, 0x10, // 4    
-		0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5    
-		0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6    
-		0xF0, 0x10, 0x20, 0x40, 0x40, // 7
-		0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
-		0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
-		0xF0, 0x90, 0xF0, 0x90, 0x90, // A
-		0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
-		0xF0, 0x80, 0x80, 0x80, 0xF0, // C
-		0xE0, 0x90, 0x90, 0x90, 0xE0, // D
-		0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
-		0xF0, 0x80, 0xF0, 0x80, 0x80, // F
-		0x90, 0x90, 0xF0, 0x90, 0x90, // H
-	};
+	std::vector<uint8_t>* ROM = loadMachineCode_fromFile("charROM.txt");
+	std::vector<uint8_t>* RAM = loadMachineCode_fromFile("Source.och8");
 
 	ramAddr = 0;
 
-	size_t arrayLength = sizeof(char_ROM) / sizeof(char_ROM[0]);
-
 	//loading ROM
-	for (size_t i = 0; i < arrayLength; i++){
-		ram[i] = char_ROM[i];
+	for (size_t i = 0; i < ROM->size(); i++){
+		ram[i] = (*ROM)[i];
 	}
 
-	programCounter = (uint16_t)arrayLength;
+	programCounter = (uint16_t)(ROM->size());
 	ramAddr = programCounter;
 	
 	stackPointer = 0xffe;
@@ -42,33 +23,66 @@ Chip8::Chip8() {
 
 	ch8flag = 0;
 
-	uint16_t spriteIndex = 0xA000;
-	uint16_t spriteX = 0x6000;
-	uint16_t spriteY = 0x6100;
-	//I = 5 load spr 1
+	//Load Ram
+	size_t i = ROM->size();
+	size_t RamIndex = 0;
 
-	for (size_t i = 0; i < 17; i++) {
-
-		test_OpcodeLoader(spriteIndex);
-		//V0 = 2
-		test_OpcodeLoader(spriteX);
-		//V1 = 5
-		test_OpcodeLoader(spriteY);
-		//DRW
-		test_OpcodeLoader(0xD010);
-
-		spriteX += 0x0005;
-		if (spriteX > 0x6028) {
-			spriteX = 0x6000;
-			spriteY += 0x0006;
-		}
-
-		spriteIndex += 0x0005;
+	for (; i < RAM->size() + ROM->size(); i++) {
+		ram[i] = (*RAM)[RamIndex];
+		RamIndex++;
 	}
 
-	test_OpcodeLoader(0xF50A);
+}
 
+std::vector<uint8_t>* Chip8::loadMachineCode_fromFile(std::string path) {
+
+	std::vector<uint8_t>* ROM = new std::vector<uint8_t>;
+
+	std::ifstream romFile(path);
+
+	if (!romFile.is_open()) {
+		std::cout << "ERROR: Couldn't find the ROM file.\n";
+		return NULL; // Exit early if the file can't be opened
+	}
+
+	std::string line;
+	size_t romIndex = 0;
+
+	while (std::getline(romFile, line)) {
+
+		size_t index = 0;
+		size_t startHex = 0;
+		
+		//put hex values in rom line by line
+		while (index < line.length()) {
+			
+			if (line.substr(index, 1) == ",") {
+
+				std::string subStr = line.substr(startHex, 4);
+				
+				ROM->push_back(toDec(subStr));
 	
+				romIndex++;
+				//jump to next hex value
+				startHex += 6;
+			}
+			
+			index++;
+		}
+	}
+
+	romFile.close();
+
+	return ROM;
+}
+
+uint8_t Chip8::toDec(std::string hex){
+
+	//0xFE => FE
+
+	unsigned int dec = std::stoul(hex, nullptr, 16);
+	
+	return (uint8_t)(dec);
 }
 
 
@@ -84,6 +98,7 @@ void Chip8::setFlag(uint8_t flag) {
 	ch8flag = flag;
 }
 
+/*
 void Chip8::test_OpcodeLoader(uint16_t opcode) {
 
 	ram[ramAddr] = (opcode & 0xff00) >> 8;
@@ -91,7 +106,7 @@ void Chip8::test_OpcodeLoader(uint16_t opcode) {
 	ram[ramAddr] = opcode & 0x00ff;
 	ramAddr++;
 
-}
+}*/
 
 //FETCH
 int Chip8::update(bool keys[16]) {

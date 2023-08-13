@@ -1,9 +1,14 @@
 #pragma once
 
+#include <iostream>
 #include <chrono>
 #include <thread>
 #include <cstdint>
 #include <sstream>
+#include <fstream>
+#include <string>
+
+#include <vector>
 
 #include "Compiler_chip8.h"
 
@@ -34,6 +39,7 @@ class Chip8
 	uint8_t soundTimer;
 	uint8_t delayTimer;
 
+
 	/*
 	*  FLAGS:
 	*   0 : clear screen
@@ -43,9 +49,13 @@ class Chip8
 
 	std::string toHex(uint16_t dec);
 
+	uint8_t toDec(std::string hex);
+
 	bool keyMap[16] = {};
 
 	void setFlag(uint8_t flag);
+
+	std::vector<uint8_t>* loadMachineCode_fromFile(std::string path);
 
 private:
 
@@ -56,13 +66,9 @@ private:
 	uint16_t instruction;
 	uint8_t ram[0xfff] = {};//4095 0xfff
 
-	
-
-	void test_OpcodeLoader(uint16_t opcode);
+	//void test_OpcodeLoader(uint16_t opcode);
 
 	void executeCommand();
-
-	
 
 	void CLR();
 
