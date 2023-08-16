@@ -42,7 +42,7 @@ std::vector<uint8_t>* Chip8::loadMachineCode_fromFile(std::string path) {
 
 	if (!romFile.is_open()) {
 		std::cout << "ERROR: Couldn't find the ROM file.\n";
-		return NULL; // Exit early if the file can't be opened
+		//load DEFAULT_helloWorld .och8
 	}
 
 	std::string line;
@@ -53,7 +53,7 @@ std::vector<uint8_t>* Chip8::loadMachineCode_fromFile(std::string path) {
 		size_t index = 0;
 		size_t startHex = 0;
 		
-		//put hex values in rom line by line
+		//put hex values in rom/ram line by line
 		while (index < line.length()) {
 			
 			if (line.substr(index, 1) == ",") {
@@ -84,7 +84,6 @@ uint8_t Chip8::toDec(std::string hex){
 	
 	return (uint8_t)(dec);
 }
-
 
 //translate decimal to hex
 std::string Chip8::toHex(uint16_t dec) {
@@ -164,11 +163,11 @@ void Chip8::executeCommand() {
 	switch (instruction & 0xf000)
 	{
 	case 0x0000: 
-		if (instruction == 0x00E0)CLR();
-		else if (instruction == 0x00EE)RET();
+		if (instruction == 0x00E0)CLR_00E0();
+		else if (instruction == 0x00EE)RET_00EE();
 		break;
 	case 0x1000:
-		if (instruction == 0x00EE)JMP_1nnn();
+		JMP_1nnn();
 		break;
 		
 	case 0x2000:
@@ -281,22 +280,52 @@ void Chip8::executeCommand() {
 
 		// SKP VX — EX9E
 	case 0xE000:
-		SKP_9x9E();
+		SKP_Ex9E();
+		SKNP_ExA1();
+		
 		break;
 
-		// LD VX, DT — FX07
-		// LD VX, K — FX0A
-		// ... more cases ...
 	case 0xF000:
-		if ((instruction & 0x000A) == 0x000A) {
-			WFK();
+		
+		instructionGroup = instruction & 0x00ff;
+
+		switch (instructionGroup)
+		{
+		case 0x07:
+			LDD_Fx07();
+			break;
+		case 0x0A:
+			WFK_Fx0A();
+			break;
+		case 0x15:
+			LDRD_Fx15();
+			break;
+		case 0x18:
+			LDRS_Fx18();
+			break;
+		case 0x1E:
+			ADDI_Fx1E();
+			break;
+		case 0x29:
+			SIR_FX29();
+			break;
+		case 0x33:
+			DTB_FX33();
+			break;
+		case 0x55:
+			STR_FX55();
+			break;
+		case 0x65:
+			CFR_FX65();
+			break;
 		}
+		
 		break;
 
 	}
 }
 
-void Chip8::CLR() {
+void Chip8::CLR_00E0() {
 	for (size_t i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i++){
 		display[i] = 0;
 	}
@@ -304,7 +333,7 @@ void Chip8::CLR() {
 	ch8flag = 1;
 }
 
-void Chip8::RET() {
+void Chip8::RET_00EE() {
 	programCounter = ram[stackPointer];
 }
 
@@ -503,13 +532,20 @@ void Chip8::JMPZ_Bnnn(){
 
 void Chip8::RND_Cxnn(){
 
+	uint16_t regX = instruction & 0x0f00;
+	regX >>= 8;
+
+	uint8_t value = instruction & 0x00ff;	
+
+	std::random_device rd;
+	std::uniform_int_distribution <int>dist(0,255);
+
+	registerFile[regX] = (uint8_t)(dist(rd)) & value;
+	
 }
 
 void Chip8::DRW_Dxyn()
 {
-	std::cout << "DRW_DXYN" << toHex(instruction) << "\n";
-	std::cout << "V0_x" << toHex(registerFile[0]) << "\n";
-	std::cout << "V1_y" << toHex(registerFile[1]) << "\n";
 
 	uint16_t regX = instruction & 0x0f00;
 	regX >>= 8;
@@ -517,11 +553,9 @@ void Chip8::DRW_Dxyn()
 	uint16_t regY = instruction & 0x00f0;
 	regY >>= 4;
 
-	uint8_t value = instruction & 0x000f;
+	uint16_t value = instruction & 0x000f;
 
-	//std::cout << "DRW DXYN " << toHex(instruction) << "\n";
-	////DRW VX, VY, N — DXYN
-	
+	//take x,y coordinates
 	uint16_t Vx = registerFile[regX];
 	uint16_t Vy = registerFile[regY];
 
@@ -529,7 +563,7 @@ void Chip8::DRW_Dxyn()
 	uint8_t colorChecker = 0x80;
 	uint16_t ramSpritePos = indexRegister;
 
-	for (size_t i = 0; i < 5 * 8; i++) {
+	for (uint16_t i = 0; i < value * 2; i++) {
 
 		size_t startingPos = Vy * SCREEN_WIDTH + Vx;
 
@@ -553,7 +587,7 @@ void Chip8::DRW_Dxyn()
 	ch8flag = 2;
 }
 
-void Chip8::SKP_9x9E(){
+void Chip8::SKP_Ex9E(){
 	uint16_t regX = instruction & 0x0f00;
 	regX >>= 8;
 
@@ -567,7 +601,7 @@ void Chip8::SKP_9x9E(){
 	}
 }
 
-void Chip8::SKNP(){
+void Chip8::SKNP_ExA1(){
 	uint16_t regX = instruction & 0x0f00;
 	regX >>= 8;
 
@@ -580,13 +614,13 @@ void Chip8::SKNP(){
 	}
 }
 
-void Chip8::LDD(){
+void Chip8::LDD_Fx07(){
 	uint16_t regX = instruction & 0x0f00;
 	regX >>= 8;
 	registerFile[regX] = delayTimer;
 }
 
-void Chip8::WFK(){
+void Chip8::WFK_Fx0A(){
 	ch8flag = 3;
 }
 
@@ -610,18 +644,30 @@ void Chip8::ADDI_Fx1E(){
 	indexRegister += registerFile[regX];
 }
 
-void Chip8::LD_FX29(){
+void Chip8::SIR_FX29(){
 	uint16_t regX = instruction & 0x0f00;
 	regX >>= 8;
 
-	indexRegister = registerFile[regX];
+	indexRegister = registerFile[regX] * 0x05;
 }
 
-void Chip8::LD_FX33(){
-	//BCD
+//dec number 230 => ram[i] = 2 , ram[i + 1] = 3 ...
+void Chip8::DTB_FX33(){
+
+	uint16_t regX = instruction & 0x0f00;
+	regX >>= 8;
+
+	std::string numberStr = std::to_string(registerFile[regX]);
+
+	uint16_t i = 0;
+	for (char digitChar : numberStr) {
+		int digit = digitChar - '0'; // Convert char to integer
+		ram[indexRegister + i] = (uint8_t)(digit);
+		i++;
+	}
 }
 
-void Chip8::LDRR_FX55(){
+void Chip8::STR_FX55(){
 	
 	uint16_t regX = instruction & 0x0f00;
 	regX >>= 8;
@@ -631,7 +677,7 @@ void Chip8::LDRR_FX55(){
 	}
 }
 
-void Chip8::LD_FX65(){
+void Chip8::CFR_FX65(){
 
 	uint16_t regX = instruction & 0x0f00;
 	regX >>= 8;

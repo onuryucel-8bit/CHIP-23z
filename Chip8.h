@@ -7,6 +7,7 @@
 #include <sstream>
 #include <fstream>
 #include <string>
+#include <random>
 
 #include <vector>
 
@@ -70,48 +71,47 @@ private:
 
 	void executeCommand();
 
-	void CLR();
-
-	void RET();
+	void CLR_00E0();
+	void RET_00EE();
 	void JMP_1nnn();
 	void CALL_2nnn();
+
 	void CE_3xnn();//SE //CONST EQUAL to reg
-	
 	void CNE_4xnn();//SNE //const not equal to reg
 	void RE_5xy0();//reg equals
 	void LDC_6xnn();//LOAD CONST
+
 	void ADDC_7xnn();//ADD const
 	void MOV_8xy0();//LD 8XY0
 	void OR_8xy1();
-
 	void AND_8xy2();
+
 	void XOR_8xy3();
 	void ADDR_8xy4();//add reg
 	void SUBX_8xy5();
-
 	void SHR_8xy6();
+
 	void SUBY_8xy7();
 	void SHL_8xyE();
 	void RNE_9xy0();//reg not equal
-
-
 	void LDI_Annn();//load index reg
+
 	void JMPZ_Bnnn();//jump with zero reg	
 	void RND_Cxnn();
 	void DRW_Dxyn();
+	void SKP_Ex9E();//skip if key pressed
 
-	void SKP_9x9E();//skip if key pressed
-	void SKNP();//skip if key not pressed
-	void LDD();//load delay timer
-	void WFK();//wait for key
-
+	void SKNP_ExA1();//skip if key not pressed
+	void LDD_Fx07();//load delay timer
+	void WFK_Fx0A();//wait for key
 	void LDRD_Fx15();//load reg to delay timer
+
 	void LDRS_Fx18();//load reg to sound timer
 	void ADDI_Fx1E();//index reg + Vx
-	void LD_FX29();
+	void SIR_FX29();//shift index reg 
 
-	void LD_FX33();
-	void LDRR_FX55();//LOAD reg to ram
-	void LD_FX65();
+	void DTB_FX33();//dec to bcd DTB
+	void STR_FX55();//STORE
+	void CFR_FX65();//copy from ram CFR
 	
 };
