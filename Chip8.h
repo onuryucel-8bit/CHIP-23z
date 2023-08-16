@@ -43,8 +43,11 @@ class Chip8
 
 	/*
 	*  FLAGS:
-	*   0 : clear screen
-	* 
+	*   0 : nothing
+	*   1 : clear screen
+	*   2 : DRW
+	*   3 : wait for keys WFK
+	*   4 : KEY pressed for WFK return flag
 	*/
 	int update(bool keys[16]);
 

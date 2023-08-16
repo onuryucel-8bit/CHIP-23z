@@ -565,12 +565,16 @@ void Chip8::DRW_Dxyn()
 
 	for (uint16_t i = 0; i < value * 2; i++) {
 
+		//translate 2D coordinates to 1D array
 		size_t startingPos = Vy * SCREEN_WIDTH + Vx;
 
+		//check the sprite pixel if there is white pixel put 1 inside of display array
 		if ((ram[ramSpritePos] & colorChecker) == colorChecker) {
 
+			// 1 = WHITE
+			// 0 = BLACK
 			display[startingPos] = 1;
-			//pixels[startingPos].setFillColor(sf::Color::White);
+			
 		}
 		
 		colorChecker >>= 1;
