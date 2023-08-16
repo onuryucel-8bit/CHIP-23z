@@ -1,18 +1,26 @@
 #pragma once
 
 #include <iostream>
+
+//for sleep
 #include <chrono>
 #include <thread>
+
+//for uint8/16 types
 #include <cstdint>
+
+//for toHex func
 #include <sstream>
+
+//file reading
 #include <fstream>
 #include <string>
+
+//for RND opcode
 #include <random>
 
+//file reading
 #include <vector>
-
-#include "Compiler_chip8.h"
-
 
 #define SCREEN_WIDTH  64
 #define SCREEN_HEIGHT 32
@@ -33,7 +41,7 @@ class Chip8
 	uint16_t indexRegister;
 	uint16_t programCounter;
 
-	uint16_t stackPointer;
+	uint8_t stackPointer;
 
 	uint8_t display[SCREEN_WIDTH * SCREEN_HEIGHT];
 
@@ -62,6 +70,8 @@ class Chip8
 	std::vector<uint8_t>* loadMachineCode_fromFile(std::string path);
 
 private:
+
+	uint8_t stack[256] = {};
 
 	uint8_t ch8flag;
 

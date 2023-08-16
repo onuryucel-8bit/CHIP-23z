@@ -105,11 +105,11 @@ void Window_SFML::reFreshScreen() {
 
 	for (size_t i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i++) {
 
-		if (chip_8.display[i] == 0) {
+		if (chip_8.display[i] == 0x00) {
 			pixels[i].setFillColor(sf::Color::Black);
 
 		}
-		else if (chip_8.display[i] == 1) {
+		else if (chip_8.display[i] == 0x80) {
 			pixels[i].setFillColor(sf::Color::White);
 
 		}
@@ -170,6 +170,8 @@ void Window_SFML::updateChip8() {
 	flag = 0;
 }
 
+#pragma region drawCommands
+
 void Window_SFML::drawTexts() {
 	for (size_t i = 0; i < 16; i++) {
 		regs[i].setString("V" + std::to_string(i) + ":" + chip_8.toHex(chip_8.registerFile[i]));
@@ -196,6 +198,8 @@ void Window_SFML::drawPixels() {
 		m_window->draw(pixels[i]);
 	}
 }
+
+#pragma endregion
 
 void Window_SFML::run() {
 	while (m_window->isOpen())

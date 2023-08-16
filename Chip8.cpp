@@ -16,7 +16,7 @@ Chip8::Chip8() {
 	programCounter = (uint16_t)(ROM->size());
 	ramAddr = programCounter;
 	
-	stackPointer = 0xffe;
+	stackPointer = 0x0;
 	indexRegister = 0;
 
 	soundTimer = 10;
@@ -334,7 +334,7 @@ void Chip8::CLR_00E0() {
 }
 
 void Chip8::RET_00EE() {
-	programCounter = ram[stackPointer];
+	programCounter = stack[stackPointer];
 }
 
 #pragma region Jumps
@@ -346,9 +346,9 @@ void Chip8::JMP_1nnn() {
 #pragma endregion
 
 void Chip8::CALL_2nnn(){
-	ram[stackPointer] = programCounter & 0xff0; 
+	stack[stackPointer] = programCounter & 0xff0; 
 	stackPointer += 1;
-	ram[stackPointer] = programCounter & 0x00f;
+	stack[stackPointer] = programCounter & 0x00f;
 }
 
 void Chip8::CE_3xnn() {
@@ -544,50 +544,48 @@ void Chip8::RND_Cxnn(){
 	
 }
 
-void Chip8::DRW_Dxyn()
-{
+void Chip8::DRW_Dxyn() {
 
-	uint16_t regX = instruction & 0x0f00;
-	regX >>= 8;
-
-	uint16_t regY = instruction & 0x00f0;
-	regY >>= 4;
-
-	uint16_t value = instruction & 0x000f;
-
-	//take x,y coordinates
-	uint16_t Vx = registerFile[regX];
-	uint16_t Vy = registerFile[regY];
-
-	///index = y * width + x
-	uint8_t colorChecker = 0x80;
-	uint16_t ramSpritePos = indexRegister;
-
-	for (uint16_t i = 0; i < value * 2; i++) {
-
-		//translate 2D coordinates to 1D array
-		size_t startingPos = Vy * SCREEN_WIDTH + Vx;
-
-		//check the sprite pixel if there is white pixel put 1 inside of display array
-		if ((ram[ramSpritePos] & colorChecker) == colorChecker) {
-
-			// 1 = WHITE
-			// 0 = BLACK
-			display[startingPos] = 1;
-			
-		}
-		
-		colorChecker >>= 1;
-		Vx += 1;
-		if (colorChecker == 0) {
-			colorChecker = 0x80;
-			ramSpritePos += 1;
-			Vx = registerFile[regX];
-			Vy += 1;
-		}
-
-	}
+	uint8_t regX = (instruction >> 8) & 0x0f;	
+	uint8_t regY = (instruction >> 4) & 0x0f;
 	
+	uint8_t height = instruction & 0x000f;
+
+	uint8_t Vx = registerFile[regX];
+	uint8_t Vy = registerFile[regY];
+
+	uint8_t spritePixel;
+	uint8_t screenPixel;
+	size_t startingPos;
+
+	registerFile[0xf] = 0;
+
+	for (uint8_t row = 0; row < height; row++) {
+
+		uint8_t spriteByte = ram[indexRegister + row];
+
+		for (uint8_t col = 0; col < 4; col++) {
+
+			startingPos = Vy * SCREEN_WIDTH + Vx;
+
+			spritePixel = (spriteByte >> (7 - col)) & 0x01;
+			//---//
+			screenPixel = display[startingPos] >> 7;
+
+			//check collision
+			if ((screenPixel ^ spritePixel) != screenPixel) {
+				registerFile[0xf] = 1;
+			}
+
+			screenPixel = screenPixel ^ spritePixel;
+			display[startingPos] = screenPixel << 7;
+
+			Vx++;
+		}
+		Vx = registerFile[regX];
+		Vy++;
+	}
+
 	ch8flag = 2;
 }
 
