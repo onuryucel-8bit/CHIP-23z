@@ -34,6 +34,7 @@ class Chip8
 {
  public:
 	 Chip8();
+	 Chip8(std::string romFile, std::string ramFile);
 	~Chip8();
 	
 	uint8_t registerFile[16] = {};
@@ -63,17 +64,23 @@ class Chip8
 
 	uint8_t toDec(std::string hex);
 
+	std::string toBin(int n);
+
 	bool keyMap[16] = {};
 
 	void setFlag(uint8_t flag);
 
-	std::vector<uint8_t>* loadMachineCode_fromFile(std::string path);
+	std::vector<uint8_t>* loadMachineCode_fromFile(std::string path, std::string type);
+
+	char inputCh8Flag;
 
 private:
 
 	uint8_t stack[256] = {};
 
 	uint8_t ch8flag;
+
+	uint8_t inputVx;
 
 	uint16_t ramAddr;
 
@@ -121,7 +128,7 @@ private:
 
 	void LDRS_Fx18();//load reg to sound timer
 	void ADDI_Fx1E();//index reg + Vx
-	void SIR_FX29();//shift index reg 
+	void IIR_FX29();//increase index reg 
 
 	void DTB_FX33();//dec to bcd DTB
 	void STR_FX55();//STORE

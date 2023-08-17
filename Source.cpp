@@ -1,28 +1,20 @@
 #include "Window_SFML.h"
 #include "Chip8.h"
 
-/*
-std::string toBin(int n){
-	std::string bin = "";
 
-	while (n > 1){
+int main(int argc, char* argv[]) {
 
-		bin +=  std::to_string(n % 2);
-		n /= 2;
-	}
+	std::cout << "===============================\n";
+	std::cout << "Welcome to Chip8" << "\n";
+	std::cout << "===============================\n";
 
-	bin += std::to_string(n);
+	//if (argc == 3){
+		
+	std::string rom = "charROM.txt";
+	std::string ram = "Source.och8";
+		Window_SFML window(rom, ram);
 
-	std::reverse(bin.begin(), bin.end());
-
-	return bin;
-}
-*/
-
-int main() {
-
-	Window_SFML window;
-
-	window.run();
+		window.run();
+	//}
 
 }

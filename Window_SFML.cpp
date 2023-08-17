@@ -4,7 +4,7 @@
 
 void Window_SFML::createSound() {
 
-	if (!buffer.loadFromFile("chip8_squareWave.wav")) {
+	if (!buffer.loadFromFile("ch8_squareWave.wav")) {
 		std::cout << "ERROR : failed the load sound file \n";
 	}
 
@@ -84,7 +84,7 @@ void Window_SFML::createWindows() {
 	m_windowInfo->setPosition(sf::Vector2i(0, 0));
 }
 
-Window_SFML::Window_SFML() {
+Window_SFML::Window_SFML(std::string romFile, std::string ramFile): chip_8(romFile, ramFile) {
 
 	createWindows();
 	createPixels();
@@ -101,6 +101,12 @@ void Window_SFML::getInputs() {
 
 }
 
+void Window_SFML::updateKeys() {
+	for (char i = 0; i < 16; i++){
+		keys[i] = chip_8.keyMap[i];
+	}
+}
+
 void Window_SFML::reFreshScreen() {
 
 	for (size_t i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i++) {
@@ -109,8 +115,41 @@ void Window_SFML::reFreshScreen() {
 			pixels[i].setFillColor(sf::Color::Black);
 
 		}
-		else if (chip_8.display[i] == 0x80) {
-			pixels[i].setFillColor(sf::Color::White);
+		else if ((chip_8.display[i] & 0x80 ) == 0x80) {
+
+			uint8_t color = chip_8.display[i] & 0x0f;
+			
+			switch (color)
+			{
+			case 0x00:
+				pixels[i].setFillColor(sf::Color::White);
+				break;
+
+			case 0x01:
+				pixels[i].setFillColor(sf::Color::Red);
+				break;
+
+			case 0x02:
+				pixels[i].setFillColor(sf::Color::Green);			
+				break;
+
+			case 0x03:
+				pixels[i].setFillColor(sf::Color::Blue);
+				break;
+
+			case 0x04:
+				pixels[i].setFillColor(sf::Color::Cyan);
+				break;
+			
+			case 0x05:
+				pixels[i].setFillColor(sf::Color::Yellow);
+				break;
+
+			case 0x06://orange
+				pixels[i].setFillColor(sf::Color(255,165,0));
+				break;
+			}
+			
 
 		}
 
@@ -161,6 +200,11 @@ void Window_SFML::updateChip8() {
 		chip_8.setFlag(4);
 		//execute wait for key command
 		flag = chip_8.update(keys);
+
+		
+	}
+	else if(flag == 5){
+		updateKeys();
 	}
 
 	if (chip_8.soundTimer > 0) {

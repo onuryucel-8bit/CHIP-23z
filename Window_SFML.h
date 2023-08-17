@@ -11,7 +11,7 @@
 class Window_SFML
 {
 public:
-	Window_SFML();
+	Window_SFML(std::string romFile, std::string ramFile);
 	~Window_SFML();
 
 	void run();
@@ -47,6 +47,7 @@ private:
 	void createSound();
 
 	void getInputs();
+	void updateKeys();
 
 	void drawTexts();
 

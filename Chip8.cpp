@@ -3,8 +3,12 @@
 
 Chip8::Chip8() {
 
-	std::vector<uint8_t>* ROM = loadMachineCode_fromFile("charROM.txt");
-	std::vector<uint8_t>* RAM = loadMachineCode_fromFile("Source.och8");
+}
+
+Chip8::Chip8(std::string romFile, std::string ramFile) {
+
+	std::vector<uint8_t>* ROM = loadMachineCode_fromFile(romFile,"rom");
+	std::vector<uint8_t>* RAM = loadMachineCode_fromFile(ramFile,"ram");
 
 	ramAddr = 0;
 
@@ -19,9 +23,10 @@ Chip8::Chip8() {
 	stackPointer = 0x0;
 	indexRegister = 0;
 
-	soundTimer = 10;
+	soundTimer = 0;
 
 	ch8flag = 0;
+	inputCh8Flag = 0;
 
 	//Load Ram
 	size_t i = ROM->size();
@@ -34,14 +39,14 @@ Chip8::Chip8() {
 
 }
 
-std::vector<uint8_t>* Chip8::loadMachineCode_fromFile(std::string path) {
+std::vector<uint8_t>* Chip8::loadMachineCode_fromFile(std::string path,std::string type) {
 
 	std::vector<uint8_t>* ROM = new std::vector<uint8_t>;
 
 	std::ifstream romFile(path);
 
 	if (!romFile.is_open()) {
-		std::cout << "ERROR: Couldn't find the ROM file.\n";
+		std::cout << "ERROR: Couldn't find the "<< type <<" file \n";
 		//load DEFAULT_helloWorld .och8
 	}
 
@@ -83,6 +88,22 @@ uint8_t Chip8::toDec(std::string hex){
 	unsigned int dec = std::stoul(hex, nullptr, 16);
 	
 	return (uint8_t)(dec);
+}
+
+std::string Chip8::toBin(int n) {
+	std::string bin = "";
+
+	while (n > 1) {
+
+		bin += std::to_string(n % 2);
+		n /= 2;
+	}
+
+	bin += std::to_string(n);
+
+	std::reverse(bin.begin(), bin.end());
+
+	return bin;
 }
 
 //translate decimal to hex
@@ -141,12 +162,26 @@ int Chip8::update(bool keys[16]) {
 
 	
 	}
+	else if (inputCh8Flag == 1) {
+
+		if (keyMap[inputVx]) {
+			programCounter += 2;
+			keyMap[inputVx] = false;
+			ch8flag = 5;
+		}
+
+		inputCh8Flag = 0;
+
+	}
+	else if (inputCh8Flag == 2) {
+		
+		if (!keyMap[inputVx]) {
+			programCounter += 2;
+		}
+
+		inputCh8Flag = 0;
+	}
 	else{
-		instruction = ram[programCounter];
-		programCounter += 1;
-		instruction = instruction << 8;
-		instruction += ram[programCounter];
-		programCounter += 1;
 
 		executeCommand();
 	}
@@ -156,6 +191,12 @@ int Chip8::update(bool keys[16]) {
 
 //DECODE => calls execute(opcode) functions
 void Chip8::executeCommand() {
+
+	instruction = ram[programCounter];
+	programCounter += 1;
+	instruction = instruction << 8;
+	instruction += ram[programCounter];
+	programCounter += 1;
 
 	uint16_t instructionGroup;
 
@@ -307,7 +348,7 @@ void Chip8::executeCommand() {
 			ADDI_Fx1E();
 			break;
 		case 0x29:
-			SIR_FX29();
+			IIR_FX29();
 			break;
 		case 0x33:
 			DTB_FX33();
@@ -344,6 +385,8 @@ void Chip8::JMP_1nnn() {
 }
 
 #pragma endregion
+
+#pragma region LineA
 
 void Chip8::CALL_2nnn(){
 	stack[stackPointer] = programCounter & 0xff0; 
@@ -554,7 +597,11 @@ void Chip8::DRW_Dxyn() {
 	uint8_t Vx = registerFile[regX];
 	uint8_t Vy = registerFile[regY];
 
+
+	uint8_t spriteByte;
 	uint8_t spritePixel;
+	uint8_t color;
+
 	uint8_t screenPixel;
 	size_t startingPos;
 
@@ -562,7 +609,7 @@ void Chip8::DRW_Dxyn() {
 
 	for (uint8_t row = 0; row < height; row++) {
 
-		uint8_t spriteByte = ram[indexRegister + row];
+		spriteByte = ram[indexRegister + row];
 
 		for (uint8_t col = 0; col < 4; col++) {
 
@@ -578,8 +625,18 @@ void Chip8::DRW_Dxyn() {
 			}
 
 			screenPixel = screenPixel ^ spritePixel;
-			display[startingPos] = screenPixel << 7;
 
+			//copying for color values i cant find logical operation for this
+			//11 = 1 / 10 = 0 / 01 = 1 / 00 = 0
+			
+			screenPixel <<= 7;
+			color = spriteByte & 0x0f;
+
+			std::cout << "color" << toBin(color) << "\n";
+			
+			display[startingPos] = screenPixel | color;
+			std::cout << "Zpixel" << toBin(display[startingPos]) << "\n";
+			
 			Vx++;
 		}
 		Vx = registerFile[regX];
@@ -588,6 +645,7 @@ void Chip8::DRW_Dxyn() {
 
 	ch8flag = 2;
 }
+#pragma endregion
 
 void Chip8::SKP_Ex9E(){
 	uint16_t regX = instruction & 0x0f00;
@@ -600,7 +658,12 @@ void Chip8::SKP_Ex9E(){
 	if (keyMap[Vx]) {
 		programCounter += 2;
 		keyMap[Vx] = false;
+		ch8flag = 5;
+
+		return;
 	}
+	inputCh8Flag = 1;
+
 }
 
 void Chip8::SKNP_ExA1(){
@@ -612,8 +675,10 @@ void Chip8::SKNP_ExA1(){
 	Vx &= 0x0f;
 
 	if (!keyMap[Vx]) {
-		programCounter += 2;		
+		programCounter += 2;
 	}
+
+	inputCh8Flag = 2;
 }
 
 void Chip8::LDD_Fx07(){
@@ -646,7 +711,7 @@ void Chip8::ADDI_Fx1E(){
 	indexRegister += registerFile[regX];
 }
 
-void Chip8::SIR_FX29(){
+void Chip8::IIR_FX29(){
 	uint16_t regX = instruction & 0x0f00;
 	regX >>= 8;
 
@@ -690,3 +755,4 @@ void Chip8::CFR_FX65(){
 }
 
 Chip8::~Chip8() {}
+
