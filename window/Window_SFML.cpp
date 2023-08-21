@@ -4,7 +4,7 @@
 
 void Window_SFML::createSound() {
 
-	if (!buffer.loadFromFile("ch8_squareWave.wav")) {
+	if (!buffer.loadFromFile("..\\res\\ch8_squareWave.wav")) {
 		std::cout << "ERROR : failed the load sound file \n";
 	}
 
@@ -13,7 +13,7 @@ void Window_SFML::createSound() {
 
 void Window_SFML::createTexts() {
 
-	if (!font.loadFromFile("Retro Gaming.ttf")) {
+	if (!font.loadFromFile("..\\res\\Retro Gaming.ttf")) {
 		std::cout << "ERROR :: failed to load font \n";
 	}
 

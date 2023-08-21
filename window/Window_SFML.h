@@ -6,7 +6,7 @@
 #include <SFML/Audio.hpp>
 
 
-#include "Chip8.h"
+#include "../chip8/Chip8.h"
 
 class Window_SFML
 {
