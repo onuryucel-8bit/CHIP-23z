@@ -5,19 +5,23 @@ Chip8::Chip8() {
 
 }
 
-Chip8::Chip8(std::string romFile, std::string ramFile) {
+Chip8::Chip8(std::string romFile) {
 
 	std::vector<uint8_t>* ROM = loadMachineCode_fromFile(romFile,"rom");
-	std::vector<uint8_t>* RAM = loadMachineCode_fromFile(ramFile,"ram");
+	//std::vector<uint8_t>* RAM = loadMachineCode_fromFile(ramFile,"ram");
 
 	ramAddr = 0;
 
 	//loading ROM
-	for (size_t i = 0; i < ROM->size(); i++){
+	/*for (size_t i = 0; i < ROM->size(); i++){
 		ram[i] = (*ROM)[i];
-	}
+	}*/
 
-	programCounter = (uint16_t)(ROM->size());
+
+	//init reg ,flag,timers ...
+
+	//programCounter = (uint16_t)(ROM->size());
+	programCounter = 0;
 	ramAddr = programCounter;
 	
 	stackPointer = 0x0;
@@ -29,21 +33,31 @@ Chip8::Chip8(std::string romFile, std::string ramFile) {
 	inputCh8Flag = 0;
 
 	//Load Ram
-	size_t i = ROM->size();
-	size_t RamIndex = 0;
+	//size_t i = ROM->size();
+	//size_t RamIndex = 0;
 
-	for (; i < RAM->size() + ROM->size(); i++) {
-		ram[i] = (*RAM)[RamIndex];
-		RamIndex++;
-	}
+	//for (; i < RAM->size() + ROM->size(); i++) {
+		//ram[i] = (*RAM)[RamIndex];
+		//RamIndex++;
+	//}
 
+	
 }
 
 std::vector<uint8_t>* Chip8::loadMachineCode_fromFile(std::string path,std::string type) {
 
-	std::vector<uint8_t>* ROM = new std::vector<uint8_t>;
+	std::vector<uint8_t>* ROM = new std::vector<uint8_t>(ROM_SIZE);
+	std::cout << "rom cap" << ROM->capacity() << "\n";
 
-	std::ifstream romFile(path);
+	romLoaderCH8 loader("source.och8",ROM_SIZE);
+
+	int ramAddress = loader.getCharsetData(ROM);
+	
+	loader.getVariables(ROM);
+
+	loader.getCodeSection(ROM,0);
+	
+	/*std::ifstream romFile(path);
 
 	if (!romFile.is_open()) {
 		std::cout << "ERROR: Couldn't find the "<< type <<" file \n";
@@ -77,7 +91,7 @@ std::vector<uint8_t>* Chip8::loadMachineCode_fromFile(std::string path,std::stri
 	}
 
 	romFile.close();
-
+	*/
 	return ROM;
 }
 

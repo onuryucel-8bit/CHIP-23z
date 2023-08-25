@@ -22,6 +22,8 @@
 //file reading
 #include <vector>
 
+#include "romLoaderCH8.h"
+
 #define SCREEN_WIDTH  64
 #define SCREEN_HEIGHT 32
 
@@ -30,11 +32,13 @@
 
 #define CHIP8_SLEEP_TIME 500
 
+#define ROM_SIZE 0xfff
+
 class Chip8
 {
  public:
 	 Chip8();
-	 Chip8(std::string romFile, std::string ramFile);
+	 Chip8(std::string romFile);
 	~Chip8();
 	
 	uint8_t registerFile[16] = {};

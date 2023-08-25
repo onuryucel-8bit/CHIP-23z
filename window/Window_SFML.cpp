@@ -4,7 +4,7 @@
 
 void Window_SFML::createSound() {
 
-	if (!buffer.loadFromFile("..\\res\\ch8_squareWave.wav")) {
+	if (!buffer.loadFromFile("res/ch8_squareWave.wav")) {
 		std::cout << "ERROR : failed the load sound file \n";
 	}
 
@@ -13,7 +13,7 @@ void Window_SFML::createSound() {
 
 void Window_SFML::createTexts() {
 
-	if (!font.loadFromFile("..\\res\\Retro Gaming.ttf")) {
+	if (!font.loadFromFile("res/Retro Gaming.ttf")) {
 		std::cout << "ERROR :: failed to load font \n";
 	}
 
@@ -84,7 +84,7 @@ void Window_SFML::createWindows() {
 	m_windowInfo->setPosition(sf::Vector2i(0, 0));
 }
 
-Window_SFML::Window_SFML(std::string romFile, std::string ramFile): chip_8(romFile, ramFile) {
+Window_SFML::Window_SFML(std::string romFile): chip_8(romFile) {
 
 	createWindows();
 	createPixels();

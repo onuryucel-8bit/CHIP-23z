@@ -1,5 +1,5 @@
-#include "Window_SFML.h"
-#include "Chip8.h"
+#include "window/Window_SFML.h"
+#include "chip8/Chip8.h"
 
 
 int main(int argc, char* argv[]) {
@@ -10,11 +10,11 @@ int main(int argc, char* argv[]) {
 
 	//if (argc == 3){
 		
-	std::string rom = "charROM.txt";
-	std::string ram = "Source.och8";
-		Window_SFML window(rom, ram);
+	std::string rom = "Source.och8";
+	
+	Window_SFML window(rom);
 
-		window.run();
+	window.run();
 	//}
 
 }
