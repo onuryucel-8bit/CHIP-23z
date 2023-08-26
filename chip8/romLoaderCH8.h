@@ -13,8 +13,11 @@ class romLoaderCH8 {
 
 public:
 	romLoaderCH8(std::string pathname,uint16_t ramSize);
+
 	int getCharsetData(std::vector<uint8_t>* output_och8);
+
 	int getVariables(std::vector<uint8_t>* output_och8);
+
 	int getCodeSection(std::vector<uint8_t>* output_och8, int ramAddress);
 
 private:

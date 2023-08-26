@@ -8,21 +8,9 @@ Chip8::Chip8() {
 Chip8::Chip8(std::string romFile) {
 
 	std::vector<uint8_t>* ROM = loadMachineCode_fromFile(romFile,"rom");
-	//std::vector<uint8_t>* RAM = loadMachineCode_fromFile(ramFile,"ram");
-
-	ramAddr = 0;
-
-	//loading ROM
-	/*for (size_t i = 0; i < ROM->size(); i++){
-		ram[i] = (*ROM)[i];
-	}*/
-
-
-	//init reg ,flag,timers ...
-
-	//programCounter = (uint16_t)(ROM->size());
-	programCounter = 0;
-	ramAddr = programCounter;
+	
+	
+	programCounter = ramAddr;
 	
 	stackPointer = 0x0;
 	indexRegister = 0;
@@ -32,16 +20,10 @@ Chip8::Chip8(std::string romFile) {
 	ch8flag = 0;
 	inputCh8Flag = 0;
 
-	//Load Ram
-	//size_t i = ROM->size();
-	//size_t RamIndex = 0;
+	for (size_t i = 0; i < ROM_SIZE; i++){
+		ram[i] = (*ROM)[i];
+	}
 
-	//for (; i < RAM->size() + ROM->size(); i++) {
-		//ram[i] = (*RAM)[RamIndex];
-		//RamIndex++;
-	//}
-
-	
 }
 
 std::vector<uint8_t>* Chip8::loadMachineCode_fromFile(std::string path,std::string type) {
@@ -55,43 +37,10 @@ std::vector<uint8_t>* Chip8::loadMachineCode_fromFile(std::string path,std::stri
 	
 	loader.getVariables(ROM);
 
-	loader.getCodeSection(ROM,0);
-	
-	/*std::ifstream romFile(path);
+	loader.getCodeSection(ROM,ramAddress);
 
-	if (!romFile.is_open()) {
-		std::cout << "ERROR: Couldn't find the "<< type <<" file \n";
-		//load DEFAULT_helloWorld .och8
-	}
+	ramAddr = ramAddress;
 
-	std::string line;
-	size_t romIndex = 0;
-
-	while (std::getline(romFile, line)) {
-
-		size_t index = 0;
-		size_t startHex = 0;
-		
-		//put hex values in rom/ram line by line
-		while (index < line.length()) {
-			
-			if (line.substr(index, 1) == ",") {
-
-				std::string subStr = line.substr(startHex, 4);
-				
-				ROM->push_back(toDec(subStr));
-	
-				romIndex++;
-				//jump to next hex value
-				startHex += 6;
-			}
-			
-			index++;
-		}
-	}
-
-	romFile.close();
-	*/
 	return ROM;
 }
 
@@ -131,16 +80,6 @@ std::string Chip8::toHex(uint16_t dec) {
 void Chip8::setFlag(uint8_t flag) {
 	ch8flag = flag;
 }
-
-/*
-void Chip8::test_OpcodeLoader(uint16_t opcode) {
-
-	ram[ramAddr] = (opcode & 0xff00) >> 8;
-	ramAddr++;
-	ram[ramAddr] = opcode & 0x00ff;
-	ramAddr++;
-
-}*/
 
 //FETCH
 int Chip8::update(bool keys[16]) {

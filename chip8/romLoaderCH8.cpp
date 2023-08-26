@@ -2,7 +2,7 @@
 
 romLoaderCH8::romLoaderCH8(std::string pathname,uint16_t ramSize){
 	path = pathname;
-	ramSize = ramSize;
+	this->ramSize = ramSize;
 
 	if (ramSize < 0xfff) {
 		std::cout << "ERROR : ramSize not enough ! \n";
@@ -72,7 +72,9 @@ int romLoaderCH8::getVariables(std::vector<uint8_t>* output_och8) {
 	}
 	
 	bool sectionEnding = false;
-	int lineIndex = std::strlen("VAR_SECTION_BEGIN") + 2;
+	int lineIndex = std::strlen("VAR_SECTION_BEGIN") + 1;
+
+	size_t varLength;
 
 	do
 	{
@@ -85,20 +87,21 @@ int romLoaderCH8::getVariables(std::vector<uint8_t>* output_och8) {
 				break;
 			}
 
-			int varEndIndex = 1;			
+			int varEndIndex = lineIndex;
+			varLength = 0;
 			while (true){
 				
 				if (line.substr(varEndIndex,1) == ",") {
 					
 					break;
 				}
-
+				varLength++;
 				varEndIndex++;
 			}
 
-			(*output_och8)[ramAddress] = rdx::toDec(line.substr(lineIndex, varEndIndex - 1));
+			(*output_och8)[ramAddress] = std::stoi(line.substr(lineIndex, varLength));
 			ramAddress--;
-			lineIndex += varEndIndex;
+			lineIndex += varLength + 1;//varLength points the "," thats why 1 added
 		}
 
 		lineIndex = 0;
@@ -110,51 +113,43 @@ int romLoaderCH8::getVariables(std::vector<uint8_t>* output_och8) {
 }
 
 int romLoaderCH8::getCodeSection(std::vector<uint8_t>* output_och8, int ramAddress) {
+	
+	std::string line;
 
-	//size_t lineNumber = ramAddress;
-	//std::string line;
-	//size_t blankLineIndex;
-	//int ramUsed = 0;
+	std::getline(file, line);
 
-	//std::getline(file, line);
-	//while (line.empty()) {
-	//	std::getline(file, line);
-	//}
+	//code begin
+	if (line.substr(0,5) != "CODEB") {
+		std::cout << "ERROR : getCodeSection : Theres NOT begining of CODEB keyword \n";
+		return -1;
+	}
 
-	//if (line != "CODE_SECTION_BEGIN") {
-	//	std::cout << "ERROR : getVariables() : Theres NOT begining of CODE_SECTION_BEGIN keyword \n";
-	//	return -1;
-	//}
+	bool sectionEnding = false;
+	int lineIndex = std::strlen("CODEB") + 1;
 
-	//while (std::getline(file, line)) {
+	do
+	{
 
-	//	if (line == "CODE_SECTION_END") {
-	//		break;
-	//	}
-	//	else {
+		while (lineIndex < line.length()) {
 
-	//		//get first char index of line str
-	//		blankLineIndex = line.find_first_not_of(' ') + 1;
+			if (line.substr(lineIndex, 5) == "CODEF") {
 
-	//		while (blankLineIndex < line.length()) {
+				sectionEnding = true;
+				break;
+			}
 
-	//			(*output_och8)[lineNumber] = line.substr(blankLineIndex, 4);
-	//			lineNumber++;
-	//			blankLineIndex += 5;
-	//			ramUsed++;
-	//		}
-	//	}
-	//}
+			(*output_och8)[ramAddress] = rdx::toDec(line.substr(lineIndex, 4));
+			ramAddress++;
+			lineIndex += 5;
+		}
 
-	//if (line != "CODE_SECTION_END") {
-	//	std::cout << "ERROR: End of CODE_SECTION_END undefined ! \n";
-	//	return -1;
-	//}
-
-	//return ramUsed;
+		lineIndex = 0;
+		
+	} while (!sectionEnding && std::getline(file, line));
+	
 
 	//close file
 	file.close();
 
-	return 0;
+	return ramAddress;
 }
