@@ -35,6 +35,7 @@
 #define ROM_SIZE 0xfff
 
 //TODO FIX error at CLS command cant clear display[] this is why Vf = 1
+//TODO 
 
 class Chip8
 {
