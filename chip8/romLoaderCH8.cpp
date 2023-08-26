@@ -66,13 +66,13 @@ int romLoaderCH8::getVariables(std::vector<uint8_t>* output_och8) {
 	
 	std::getline(file, line);
 	
-	if (line.substr(0,17) != "VAR_SECTION_BEGIN") {
+	if (line.substr(0,4) != "VARB") {
 		std::cout << "ERROR : getVariables() : Theres NOT begining of VAR_SECTION_BEGIN keyword \n";
 		return -1;
 	}
 	
 	bool sectionEnding = false;
-	int lineIndex = std::strlen("VAR_SECTION_BEGIN") + 1;
+	int lineIndex = std::strlen("VARB") + 1;
 
 	size_t varLength;
 
@@ -81,7 +81,7 @@ int romLoaderCH8::getVariables(std::vector<uint8_t>* output_och8) {
 
 		while (lineIndex < line.length()) {
 
-			if (line.substr(lineIndex, 15) == "VAR_SECTION_END") {
+			if (line.substr(lineIndex, 15) == "VARE") {
 
 				sectionEnding = true;
 				break;
