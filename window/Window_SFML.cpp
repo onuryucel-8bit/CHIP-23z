@@ -92,6 +92,7 @@ Window_SFML::Window_SFML(std::string romFile,emulatorType type): chip_8(romFile,
 	createSound();
 
 	flag = 0;
+	
 }
 
 #pragma endregion
@@ -282,6 +283,11 @@ void Window_SFML::drawPixels() {
 #pragma endregion
 
 void Window_SFML::run() {
+
+	if (!chip_8.init()) {
+		return;
+	}
+
 	while (m_window->isOpen())
 	{
 

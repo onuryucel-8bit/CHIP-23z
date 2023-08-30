@@ -2,10 +2,25 @@
 
 Chip8::Chip8(std::string romFile, emulatorType type) {
 
+	this->emuType = type;
+	this->romFile = romFile;
+}
+
+bool Chip8::init() {
+
 	std::vector<uint8_t>* ROM = loadMachineCode_fromFile(romFile);
+
+	if (ROM == nullptr) {
+		return false;
+	}
+
+	if (emuType == CLASSIC_CHIP_8)
+		programCounter = 0x200;
+	else
+		programCounter = ramAddr;
+
 	
-	programCounter = 0x200;
-	
+
 	stackPointer = 0x0;
 	indexRegister = 0;
 
@@ -19,32 +34,22 @@ Chip8::Chip8(std::string romFile, emulatorType type) {
 			ram[i] = (*ROM)[i];
 		}
 	}
-	else
-	{
-		for (size_t i = 0; i < ROM_SIZE; i++) {
-			std::cout << rdx::toHex(i) << " :: " << rdx::toHex(ram[i]) << "\n";
-			if (i == 512) {
-				std::cout << "===========\n";
-			}
-		}
 
-	}
-	
-
+	return true;
 }
 
 std::vector<uint8_t>* Chip8::loadMachineCode_fromFile(std::string path) {
 
-	std::vector<uint8_t>* ROM = nullptr;
-	
-	
 	std::cout << "ROM name " << path.substr(5,path.length() - 5) << "\n";
 
 	romLoaderCH8 loader(path, ROM_SIZE);
 
 	if (emuType == CHIP_Z23) {
 
-		ROM = new std::vector<uint8_t>(ROM_SIZE);
+		if (loader.initLoader() == -1)
+			return nullptr;
+
+		std::vector<uint8_t>* ROM = new std::vector<uint8_t>(ROM_SIZE);
 
 		std::cout << "rom cap" << ROM->capacity() << "\n";
 
@@ -55,6 +60,8 @@ std::vector<uint8_t>* Chip8::loadMachineCode_fromFile(std::string path) {
 		loader.getCodeSection(ROM, ramAddress);
 
 		ramAddr = ramAddress;
+
+		return ROM;
 	}
 	else if (emuType == CLASSIC_CHIP_8) {
 
@@ -89,7 +96,8 @@ std::vector<uint8_t>* Chip8::loadMachineCode_fromFile(std::string path) {
 		
 	}
 
-	return ROM;
+	return nullptr;
+	
 }
 
 uint8_t Chip8::toDec(std::string hex){
@@ -130,7 +138,7 @@ void Chip8::setFlag(uint8_t flag) {
 }
 
 //FETCH
-int Chip8::update(bool keys[16]) {
+int Chip8::update(bool* keys) {
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(CHIP8_SLEEP_TIME));
 	
@@ -185,6 +193,10 @@ int Chip8::update(bool keys[16]) {
 	else{
 
 		executeCommand();
+	}
+
+	for (size_t i = 0; i < 16; i++){
+		keys[i] = false;
 	}
 
 	return ch8flag;

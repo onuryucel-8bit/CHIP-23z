@@ -69,7 +69,7 @@ class Chip8
 	*   4 : KEY pressed for WFK return flag
 	*   5 : update keys
 	*/
-	int update(bool keys[16]);
+	int update(bool* keys);
 
 	std::string toHex(uint16_t dec);
 
@@ -85,9 +85,12 @@ class Chip8
 
 	char inputCh8Flag;
 
+	bool init();
+
 private:
 
 	emulatorType emuType;
+	std::string romFile;
 
 	uint8_t stack[256] = {};
 
@@ -101,7 +104,7 @@ private:
 	uint8_t ram[0xfff] = {};//4095 0xfff
 
 	//void test_OpcodeLoader(uint16_t opcode);
-
+	
 	void executeCommand();
 
 	void CLR_00E0();
