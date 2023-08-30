@@ -11,7 +11,7 @@
 class Window_SFML
 {
 public:
-	Window_SFML(std::string romFile);
+	Window_SFML(std::string romFile,emulatorType type);
 	~Window_SFML();
 
 	void run();

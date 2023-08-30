@@ -8,12 +8,36 @@ romLoaderCH8::romLoaderCH8(std::string pathname,uint16_t ramSize){
 		std::cout << "ERROR : ramSize not enough ! \n";
 	}
 
-	file.open(pathname, std::ios::in);
+	file.open(path, std::ios::in);
 
 	if (!file.is_open()) {
 		std::cout << "ERROR : cannot opened ROM file" << __LINE__ << "\n" << __FILEW__ << "\n";
 		return;
 	}
+}
+
+int romLoaderCH8::load_ClassicChip8ROM(uint8_t* ram) {
+	
+	file.close();
+
+	file.open(path,std::ios::binary | std::ios::ate);
+	
+	std::streampos size = file.tellg();
+	char* buffer = new char[size];
+	file.seekg(0, std::ios::beg);
+	file.read(buffer, size);
+	file.close();
+
+	for (long i = 0; i < size; ++i)
+	{
+		ram[0x200 + i] = buffer[i];
+	}
+
+	delete[] buffer;
+
+	file.close();
+
+	return 0;
 }
 
 int romLoaderCH8::getCharsetData(std::vector<uint8_t>* output_och8) {
@@ -72,7 +96,7 @@ int romLoaderCH8::getVariables(std::vector<uint8_t>* output_och8) {
 	}
 	
 	bool sectionEnding = false;
-	int lineIndex = std::strlen("VARB") + 1;
+	size_t lineIndex = std::strlen("VARB") + 1;
 
 	size_t varLength;
 
@@ -125,7 +149,7 @@ int romLoaderCH8::getCodeSection(std::vector<uint8_t>* output_och8, int ramAddre
 	}
 
 	bool sectionEnding = false;
-	int lineIndex = std::strlen("CODEB") + 1;
+	size_t lineIndex = std::strlen("CODEB") + 1;
 
 	do
 	{

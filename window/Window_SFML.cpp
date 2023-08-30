@@ -84,7 +84,7 @@ void Window_SFML::createWindows() {
 	m_windowInfo->setPosition(sf::Vector2i(0, 0));
 }
 
-Window_SFML::Window_SFML(std::string romFile): chip_8(romFile) {
+Window_SFML::Window_SFML(std::string romFile,emulatorType type): chip_8(romFile,type) {
 
 	createWindows();
 	createPixels();
@@ -98,7 +98,43 @@ Window_SFML::Window_SFML(std::string romFile): chip_8(romFile) {
 
 void Window_SFML::getInputs() {
 
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num1))
+		keys[0] = true;
+	else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num2))
+		keys[1] = true;
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num3))
+		keys[2] = true;
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num4))
+		keys[3] = true;
 
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Q))
+		keys[4] = true;
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
+		keys[5] = true;
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::E))
+		keys[6] = true;
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R))
+		keys[7] = true;
+
+
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
+		keys[8] = true;
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
+		keys[9] = true;
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))
+		keys[10] = true;
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::F))
+		keys[11] = true;
+
+
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Z))
+		keys[12] = true;
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::X))
+		keys[13] = true;
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::C))
+		keys[14] = true;
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::V))
+		keys[15] = true;
 }
 
 void Window_SFML::updateKeys() {
@@ -264,7 +300,7 @@ void Window_SFML::run() {
 		//--------------------//
 
 		updateChip8();
-		//getInputs();
+		getInputs();
 		drawPixels();
 		drawTexts();
 

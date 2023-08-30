@@ -14,6 +14,8 @@ class romLoaderCH8 {
 public:
 	romLoaderCH8(std::string pathname,uint16_t ramSize);
 
+	int load_ClassicChip8ROM(uint8_t* ram);
+
 	int getCharsetData(std::vector<uint8_t>* output_och8);
 
 	int getVariables(std::vector<uint8_t>* output_och8);

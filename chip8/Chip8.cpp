@@ -1,16 +1,10 @@
 #include "Chip8.h"
 
+Chip8::Chip8(std::string romFile, emulatorType type) {
 
-Chip8::Chip8() {
-
-}
-
-Chip8::Chip8(std::string romFile) {
-
-	std::vector<uint8_t>* ROM = loadMachineCode_fromFile(romFile,"rom");
+	std::vector<uint8_t>* ROM = loadMachineCode_fromFile(romFile);
 	
-	
-	programCounter = ramAddr;
+	programCounter = 0x200;
 	
 	stackPointer = 0x0;
 	indexRegister = 0;
@@ -20,26 +14,80 @@ Chip8::Chip8(std::string romFile) {
 	ch8flag = 0;
 	inputCh8Flag = 0;
 
-	for (size_t i = 0; i < ROM_SIZE; i++){
-		ram[i] = (*ROM)[i];
+	if (emuType == CHIP_Z23) {
+		for (size_t i = 0; i < ROM_SIZE; i++) {
+			ram[i] = (*ROM)[i];
+		}
 	}
+	else
+	{
+		for (size_t i = 0; i < ROM_SIZE; i++) {
+			std::cout << rdx::toHex(i) << " :: " << rdx::toHex(ram[i]) << "\n";
+			if (i == 512) {
+				std::cout << "===========\n";
+			}
+		}
+
+	}
+	
 
 }
 
-std::vector<uint8_t>* Chip8::loadMachineCode_fromFile(std::string path,std::string type) {
+std::vector<uint8_t>* Chip8::loadMachineCode_fromFile(std::string path) {
 
-	std::vector<uint8_t>* ROM = new std::vector<uint8_t>(ROM_SIZE);
-	std::cout << "rom cap" << ROM->capacity() << "\n";
-
-	romLoaderCH8 loader("source.och8",ROM_SIZE);
-
-	int ramAddress = loader.getCharsetData(ROM);
+	std::vector<uint8_t>* ROM = nullptr;
 	
-	loader.getVariables(ROM);
+	
+	std::cout << "ROM name " << path.substr(5,path.length() - 5) << "\n";
 
-	loader.getCodeSection(ROM,ramAddress);
+	romLoaderCH8 loader(path, ROM_SIZE);
 
-	ramAddr = ramAddress;
+	if (emuType == CHIP_Z23) {
+
+		ROM = new std::vector<uint8_t>(ROM_SIZE);
+
+		std::cout << "rom cap" << ROM->capacity() << "\n";
+
+		int ramAddress = loader.getCharsetData(ROM);
+
+		loader.getVariables(ROM);
+
+		loader.getCodeSection(ROM, ramAddress);
+
+		ramAddr = ramAddress;
+	}
+	else if (emuType == CLASSIC_CHIP_8) {
+
+		uint8_t CHARSET[] = {
+			0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+		0x20, 0x60, 0x20, 0x20, 0x70, // 1
+		0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+		0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+		0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+		0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+		0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+		0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+		0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+		0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+		0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+		0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+		0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+		0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+		0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+		0xF0, 0x80, 0xF0, 0x80, 0x80  // F
+		};
+
+		for (size_t i = 0; i < 80; i++)
+		{
+			ram[i] = CHARSET[i];
+		}
+
+		if (loader.load_ClassicChip8ROM(ram) != 0) {
+			std::cout << "ERROR : load Classic Chip8 ROM \n";
+		}
+
+		
+	}
 
 	return ROM;
 }
@@ -385,7 +433,7 @@ void Chip8::LDC_6xnn() {
 	uint8_t value = instruction & 0x00ff;
 
 	registerFile[regX] = value;
-	std::cout << "LDC 6XNN V" <<toHex(regX)<<":" << toHex(registerFile[regX]) << "\n";
+	
 }
 
 void Chip8::ADDC_7xnn(){
@@ -550,6 +598,12 @@ void Chip8::DRW_Dxyn() {
 	uint8_t Vx = registerFile[regX];
 	uint8_t Vy = registerFile[regY];
 
+	if (Vx > SCREEN_WIDTH - 1)
+		Vx = 0;
+	if (Vy > SCREEN_HEIGHT - 1)
+		Vy = 0;
+
+	//std::cout << "vx " << toDec(toHex(Vx)) << " vy " << toDec(toHex(Vy)) << "\n";
 
 	uint8_t spriteByte;
 	uint8_t spritePixel;
@@ -567,34 +621,44 @@ void Chip8::DRW_Dxyn() {
 		for (uint8_t col = 0; col < 4; col++) {
 
 			startingPos = Vy * SCREEN_WIDTH + Vx;
-
+			
+			//let spriteByte = 1001_(4color)
 			spritePixel = (spriteByte >> (7 - col)) & 0x01;
 			//---//
 			screenPixel = display[startingPos] >> 7;
 
 			//check collision
-			if ((screenPixel ^ spritePixel) != screenPixel) {
+			if ((screenPixel ^ spritePixel) == screenPixel) {
 				registerFile[0xf] = 1;
 			}
 
+			//             1 = 0^1
 			screenPixel = screenPixel ^ spritePixel;
 
 			//copying for color values i cant find logical operation for this
 			//11 = 1 / 10 = 0 / 01 = 1 / 00 = 0
 			
+
 			screenPixel <<= 7;
 			color = spriteByte & 0x0f;
 
-			std::cout << "color" << toBin(color) << "\n";
-			
 			display[startingPos] = screenPixel | color;
-			std::cout << "Zpixel" << toBin(display[startingPos]) << "\n";
 			
-			Vx++;
+			Vx++;	
+			if (Vx > 63)
+				Vx = 0;
 		}
+		
 		Vx = registerFile[regX];
 		Vy++;
+
+		if (Vx > SCREEN_WIDTH - 1)
+			Vx = 0;
+		if (Vy > SCREEN_HEIGHT - 1)
+			Vy = 0;
+		
 	}
+	
 
 	ch8flag = 2;
 }
@@ -668,7 +732,7 @@ void Chip8::IIR_FX29(){
 	uint16_t regX = instruction & 0x0f00;
 	regX >>= 8;
 
-	indexRegister = registerFile[regX] * 0x05;
+	indexRegister = registerFile[regX] + 0x05;
 }
 
 //dec number 230 => ram[i] = 2 , ram[i + 1] = 3 ...

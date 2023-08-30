@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "romLoaderCH8.h"
+#include "Commands.h"
 
 #define SCREEN_WIDTH  64
 #define SCREEN_HEIGHT 32
@@ -30,18 +31,20 @@
 #define RESIZE_SCREEN_WIDTH 20
 #define RESIZE_SCREEN_HEIGHT 20
 
-#define CHIP8_SLEEP_TIME 500
+#define CHIP8_SLEEP_TIME 20
 
 #define ROM_SIZE 0xfff
 
-//TODO FIX error at CLS command cant clear display[] this is why Vf = 1
-//TODO 
-
+//TODO DRW collision check
+enum emulatorType{
+	CLASSIC_CHIP_8,
+	CHIP_Z23
+};
 class Chip8
 {
  public:
-	 Chip8();
-	 Chip8(std::string romFile);
+	 
+	 Chip8(std::string romFile,emulatorType type);
 	~Chip8();
 	
 	uint8_t registerFile[16] = {};
@@ -78,11 +81,13 @@ class Chip8
 
 	void setFlag(uint8_t flag);
 
-	std::vector<uint8_t>* loadMachineCode_fromFile(std::string path, std::string type);
+	std::vector<uint8_t>* loadMachineCode_fromFile(std::string path);
 
 	char inputCh8Flag;
 
 private:
+
+	emulatorType emuType;
 
 	uint8_t stack[256] = {};
 
