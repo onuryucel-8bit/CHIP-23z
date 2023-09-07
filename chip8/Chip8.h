@@ -37,8 +37,9 @@
 
 //TODO DRW collision check
 enum emulatorType{
-	CLASSIC_CHIP_8,
-	CHIP_Z23
+	BINARY_CLASSIC_ROM,
+	BINARY_ROM,
+	TEXT_ROM
 };
 class Chip8
 {

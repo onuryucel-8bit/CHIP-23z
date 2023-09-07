@@ -14,7 +14,7 @@ bool Chip8::init() {
 		return false;
 	}
 
-	if (emuType == CLASSIC_CHIP_8)
+	if (emuType == BINARY_CLASSIC_ROM)
 		programCounter = 0x200;
 	else
 		programCounter = ramAddr;
@@ -29,7 +29,7 @@ bool Chip8::init() {
 	ch8flag = 0;
 	inputCh8Flag = 0;
 
-	if (emuType == CHIP_Z23) {
+	if (emuType == TEXT_ROM) {
 		for (size_t i = 0; i < ROM_SIZE; i++) {
 			ram[i] = (*ROM)[i];
 		}
@@ -44,7 +44,7 @@ std::vector<uint8_t>* Chip8::loadMachineCode_fromFile(std::string path) {
 
 	romLoaderCH8 loader(path, ROM_SIZE);
 
-	if (emuType == CHIP_Z23) {
+	if (emuType == TEXT_ROM) {
 
 		if (loader.initLoader() == -1)
 			return nullptr;
@@ -63,7 +63,7 @@ std::vector<uint8_t>* Chip8::loadMachineCode_fromFile(std::string path) {
 
 		return ROM;
 	}
-	else if (emuType == CLASSIC_CHIP_8) {
+	else if (emuType == BINARY_CLASSIC_ROM) {
 
 		uint8_t CHARSET[] = {
 			0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
