@@ -8,16 +8,17 @@ romLoaderCH8::romLoaderCH8(std::string pathname,uint16_t ramSize){
 		std::cout << "ERROR : ramSize not enough ! \n";
 	}
 
-	
 }
 
-int romLoaderCH8::initLoader() {
+bool romLoaderCH8::initLoader() {
 	file.open(path, std::ios::in);
 
 	if (!file.is_open()) {
 		std::cout << "ERROR : romLoaderCH8() >> cannot opened ROM file" << __LINE__ << "\n" << __FILE__ << "\n";
-		return -1;
+		return false;
 	}
+
+	return true;
 }
 
 int romLoaderCH8::load_ClassicChip8ROM(uint8_t* ram) {

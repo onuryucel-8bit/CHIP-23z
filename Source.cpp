@@ -15,9 +15,9 @@ int main(int argc, char* argv[]) {
 	*/
 	//if (argc == 3){
 		
-	std::string rom = "ROMS/MovingSprite.och8";
+	std::string rom = "ROMS/PONG.ch8";
 	
-	Window_SFML window(rom,TEXT_ROM);
+	Window_SFML window(rom,EMU_TEXT_ROM);
 
 	window.run();
 	//}

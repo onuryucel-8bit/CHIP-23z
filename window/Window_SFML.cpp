@@ -22,6 +22,11 @@ void Window_SFML::createTexts() {
 		regs[i].setCharacterSize(24);
 		regs[i].setFillColor(sf::Color::Black);
 		regs[i].setPosition(0, (float)(i * 20));
+
+		keyboard[i].setFont(font);
+		keyboard[i].setCharacterSize(24);
+		keyboard[i].setFillColor(sf::Color::Black);
+		keyboard[i].setPosition(160, (float)(i * 25 + 150));
 	}
 
 	PC.setFont(font);
@@ -80,7 +85,7 @@ void Window_SFML::createWindows() {
 	m_window = new sf::RenderWindow(sf::VideoMode(SCREEN_WIDTH * RESIZE_SCREEN_WIDTH, SCREEN_HEIGHT * RESIZE_SCREEN_HEIGHT), "SFML works!");
 	m_window->setPosition(sf::Vector2i(300, 0));
 
-	m_windowInfo = new sf::RenderWindow(sf::VideoMode(300, 500), "window info");
+	m_windowInfo = new sf::RenderWindow(sf::VideoMode(300, 600), "window info");
 	m_windowInfo->setPosition(sf::Vector2i(0, 0));
 }
 
@@ -257,6 +262,9 @@ void Window_SFML::drawTexts() {
 	for (size_t i = 0; i < 16; i++) {
 		regs[i].setString("V" + std::to_string(i) + ":" + chip_8.toHex(chip_8.registerFile[i]));
 		m_windowInfo->draw(regs[i]);
+
+		keyboard[i].setString("Key " + rdx::toHex(i) + ":" + std::to_string( keys[i]));
+		m_windowInfo->draw(keyboard[i]);
 	}
 
 	PC.setString("PC:" + chip_8.toHex(chip_8.programCounter));

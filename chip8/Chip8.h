@@ -37,10 +37,14 @@
 
 //TODO DRW collision check
 enum emulatorType{
-	BINARY_CLASSIC_ROM,
-	BINARY_ROM,
-	TEXT_ROM
+	//for .ch8 files
+	EMU_BINARY_CLASSIC_ROM,
+	//for .mbch8 files(binary .mch8 version)
+	EMU_BINARY_ROM,
+	//for .mch8 files
+	EMU_TEXT_ROM
 };
+
 class Chip8
 {
  public:
@@ -89,6 +93,8 @@ class Chip8
 	bool init();
 
 private:
+
+	uint16_t ramUsed = 0;
 
 	emulatorType emuType;
 	std::string romFile;

@@ -32,6 +32,7 @@ private:
 	sf::Font font;
 
 	sf::Text regs[16];
+	sf::Text keyboard[16];
 	sf::Text PC;//program counter
 	sf::Text indexReg;
 	sf::Text SP;//stack pointer

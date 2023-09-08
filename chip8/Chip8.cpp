@@ -11,10 +11,12 @@ bool Chip8::init() {
 	std::vector<uint8_t>* ROM = loadMachineCode_fromFile(romFile);
 
 	if (ROM == nullptr) {
-		return false;
+		romFile = "ROMs/DefaultRom.mch8";
+		std::cout << "Loading Default ROM\n";
+		ROM = loadMachineCode_fromFile(romFile);
 	}
 
-	if (emuType == BINARY_CLASSIC_ROM)
+	if (emuType == EMU_BINARY_CLASSIC_ROM)
 		programCounter = 0x200;
 	else
 		programCounter = ramAddr;
@@ -29,7 +31,7 @@ bool Chip8::init() {
 	ch8flag = 0;
 	inputCh8Flag = 0;
 
-	if (emuType == TEXT_ROM) {
+	if (emuType == EMU_TEXT_ROM) {
 		for (size_t i = 0; i < ROM_SIZE; i++) {
 			ram[i] = (*ROM)[i];
 		}
@@ -44,26 +46,43 @@ std::vector<uint8_t>* Chip8::loadMachineCode_fromFile(std::string path) {
 
 	romLoaderCH8 loader(path, ROM_SIZE);
 
-	if (emuType == TEXT_ROM) {
+	if (emuType == EMU_TEXT_ROM) {
 
-		if (loader.initLoader() == -1)
+		if (loader.initLoader() == false) {
+			return nullptr;
+		}
+			
+		std::vector<uint8_t>* ROM = new std::vector<uint8_t>(ROM_SIZE);
+		
+		/*=============================================================*/
+		int charsetEndAddress = loader.getCharsetData(ROM);
+		if (charsetEndAddress == -1)
 			return nullptr;
 
-		std::vector<uint8_t>* ROM = new std::vector<uint8_t>(ROM_SIZE);
+		ramUsed = charsetEndAddress;
+		/*=============================================================*/
+		int variableEndAddress= loader.getVariables(ROM);
 
-		std::cout << "rom cap" << ROM->capacity() << "\n";
+		if (variableEndAddress == -1)
+			return nullptr;
 
-		int ramAddress = loader.getCharsetData(ROM);
+		ramUsed += variableEndAddress;
+		/*=============================================================*/
+		int codeEndAddress = loader.getCodeSection(ROM, charsetEndAddress);
 
-		loader.getVariables(ROM);
+		if (codeEndAddress == -1)
+			return nullptr;
 
-		loader.getCodeSection(ROM, ramAddress);
+		ramUsed += codeEndAddress;
+		
+		/*=============================================================*/
+		ramAddr = charsetEndAddress;
 
-		ramAddr = ramAddress;
+		std::cout << "rom cap" << ROM->capacity() << " : "<<ramUsed <<" ram Used" << " remainging ROM : "<< ROM->capacity() - ramUsed <<"\n";
 
 		return ROM;
 	}
-	else if (emuType == BINARY_CLASSIC_ROM) {
+	else if (emuType == EMU_BINARY_CLASSIC_ROM) {
 
 		uint8_t CHARSET[] = {
 			0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -174,21 +193,26 @@ int Chip8::update(bool* keys) {
 	else if (inputCh8Flag == 1) {
 
 		if (keyMap[inputVx]) {
-			programCounter += 2;
+
 			keyMap[inputVx] = false;
 			ch8flag = 5;
 		}
+		else {
+			programCounter += 2;
+		}
 
 		inputCh8Flag = 0;
+		ch8flag = 5;
 
 	}
 	else if (inputCh8Flag == 2) {
 		
-		if (!keyMap[inputVx]) {
+		if (keyMap[inputVx] == true) {
 			programCounter += 2;
 		}
 
 		inputCh8Flag = 0;
+		ch8flag = 5;
 	}
 	else{
 
@@ -196,7 +220,7 @@ int Chip8::update(bool* keys) {
 	}
 
 	for (size_t i = 0; i < 16; i++){
-		keys[i] = false;
+		keyMap[i] = false;
 	}
 
 	return ch8flag;
@@ -325,7 +349,7 @@ void Chip8::executeCommand() {
 	case 0xC000:
 		RND_Cxnn();
 		break;
-
+		
 		// DRW VX, VY, N — DXYN
 	case 0xD000:
 		// Implementation...
@@ -334,8 +358,10 @@ void Chip8::executeCommand() {
 
 		// SKP VX — EX9E
 	case 0xE000:
-		SKP_Ex9E();
-		SKNP_ExA1();
+		if((instruction & 0x009E) == 0x009E)
+			SKP_Ex9E();
+		if ((instruction & 0x00A1) == 0x00A1)
+			SKNP_ExA1();
 		
 		break;
 
@@ -607,13 +633,13 @@ void Chip8::DRW_Dxyn() {
 	
 	uint8_t height = instruction & 0x000f;
 
-	uint8_t Vx = registerFile[regX];
+	uint8_t Vx = registerFile[regX];	
 	uint8_t Vy = registerFile[regY];
 
-	if (Vx > SCREEN_WIDTH - 1)
-		Vx = 0;
-	if (Vy > SCREEN_HEIGHT - 1)
-		Vy = 0;
+	
+	Vx = Vx % SCREEN_WIDTH;
+	
+	Vy = Vy % SCREEN_HEIGHT;
 
 	//std::cout << "vx " << toDec(toHex(Vx)) << " vy " << toDec(toHex(Vy)) << "\n";
 
@@ -658,16 +684,15 @@ void Chip8::DRW_Dxyn() {
 			
 			Vx++;	
 			if (Vx > 63)
-				Vx = 0;
+				Vx = Vx % SCREEN_WIDTH;
 		}
 		
 		Vx = registerFile[regX];
 		Vy++;
 
-		if (Vx > SCREEN_WIDTH - 1)
-			Vx = 0;
-		if (Vy > SCREEN_HEIGHT - 1)
-			Vy = 0;
+		
+		Vx %= SCREEN_WIDTH;
+		Vy %= SCREEN_HEIGHT;
 		
 	}
 	
@@ -680,17 +705,8 @@ void Chip8::SKP_Ex9E(){
 	uint16_t regX = instruction & 0x0f00;
 	regX >>= 8;
 
-	uint8_t Vx = registerFile[regX];
-	//0x00
-	Vx &= 0x0f;
-
-	if (keyMap[Vx]) {
-		programCounter += 2;
-		keyMap[Vx] = false;
-		ch8flag = 5;
-
-		return;
-	}
+	inputVx = registerFile[regX];
+	
 	inputCh8Flag = 1;
 
 }
@@ -699,14 +715,8 @@ void Chip8::SKNP_ExA1(){
 	uint16_t regX = instruction & 0x0f00;
 	regX >>= 8;
 
-	uint8_t Vx = registerFile[regX];
-	//0x00
-	Vx &= 0x0f;
-
-	if (!keyMap[Vx]) {
-		programCounter += 2;
-	}
-
+	inputVx = registerFile[regX];
+	
 	inputCh8Flag = 2;
 }
 
