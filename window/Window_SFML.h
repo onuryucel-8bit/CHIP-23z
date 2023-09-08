@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <cstdlib>
+#include <filesystem>
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
@@ -11,7 +12,7 @@
 class Window_SFML
 {
 public:
-	Window_SFML(std::string romFile,emulatorType type);
+	Window_SFML(std::string CURRENT_DIRECTORY, std::string romFile,emulatorType type);
 	~Window_SFML();
 
 	void run();
@@ -19,9 +20,11 @@ public:
 	uint8_t flag;
 private:
 
+	std::string CURRENT_DIRECTORY;
+
 	bool keys[16] = {};
 
-	Chip8 chip_8;
+	Chip8 chip_8;	
 
 	sf::RenderWindow* m_window;
 	sf::RenderWindow* m_windowInfo;

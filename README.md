@@ -3,7 +3,7 @@ classic chip8 (! some opcode names changed)
 
 
 ```
-.tch8 structure (enum => TEXT_ROM)
+.mch8 structure (enum => EMU_TEXT_ROM)
 ROMB
    0x0f,0x0f,0xff...
 ROME
