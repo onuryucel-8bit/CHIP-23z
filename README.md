@@ -6,7 +6,7 @@ TODO
    - check ROM loading errors
    - add cmake file
    - remove utils func inside of chip8
-   - add test better ROMs
+   - add better ROMs for testing
    - add diagram about chip8 I/O relation and flags
    - move the opcodes to somewhere else
    - add binary file reader from CHIP_Assembler ?(i dont remember where was func)
