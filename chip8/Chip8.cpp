@@ -6,6 +6,15 @@ Chip8::Chip8(std::string romFile, emulatorType type) {
 	this->romFile = romFile;
 }
 
+void Chip8::setRomFile(std::string fileName) {
+	this->romFile = fileName;
+}
+
+void Chip8::setEmuType(emulatorType type) {
+	this->emuType = type;
+}
+
+
 bool Chip8::init() {
 
 	std::vector<uint8_t>* ROM = loadMachineCode_fromFile(romFile);
@@ -42,7 +51,7 @@ bool Chip8::init() {
 
 std::vector<uint8_t>* Chip8::loadMachineCode_fromFile(std::string path) {
 
-	std::cout << "ROM name " << path.substr(5,path.length() - 5) << "\n";
+	std::cout << "ROM name " << path << "\n";
 
 	romLoaderCH8 loader(path, ROM_SIZE);
 

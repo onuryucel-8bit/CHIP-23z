@@ -1,7 +1,6 @@
 #pragma once
 #include <iostream>
 #include <cstdlib>
-#include <filesystem>
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
@@ -12,8 +11,12 @@
 class Window_SFML
 {
 public:
+	Window_SFML(std::string CURRENT_DIRECTORY);
 	Window_SFML(std::string CURRENT_DIRECTORY, std::string romFile,emulatorType type);
 	~Window_SFML();
+
+	void setEmuType(emulatorType type);
+	void setFileName(std::string fileName);
 
 	void run();
 

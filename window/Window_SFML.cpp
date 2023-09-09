@@ -4,7 +4,7 @@
 
 void Window_SFML::createSound() {
 
-	if (!buffer.loadFromFile(CURRENT_DIRECTORY + "res/ch8_squareWave.wav")) {
+	if (!buffer.loadFromFile(CURRENT_DIRECTORY + "\\res\\ch8_squareWave.wav")) {
 		std::cout << "ERROR : failed the load sound file \n";
 	}
 
@@ -13,7 +13,7 @@ void Window_SFML::createSound() {
 
 void Window_SFML::createTexts() {
 
-	if (!font.loadFromFile(CURRENT_DIRECTORY + "res/Retro Gaming.ttf")) {
+	if (!font.loadFromFile(CURRENT_DIRECTORY + "\\res\\Retro Gaming.ttf")) {
 		std::cout << "ERROR :: failed to load font \n";
 	}
 
@@ -82,11 +82,26 @@ void Window_SFML::createPixels() {
 
 void Window_SFML::createWindows() {
 
-	m_window = new sf::RenderWindow(sf::VideoMode(SCREEN_WIDTH * RESIZE_SCREEN_WIDTH, SCREEN_HEIGHT * RESIZE_SCREEN_HEIGHT), "SFML works!");
+	m_window = new sf::RenderWindow(sf::VideoMode(SCREEN_WIDTH * RESIZE_SCREEN_WIDTH, SCREEN_HEIGHT * RESIZE_SCREEN_HEIGHT), "CHIP8");
 	m_window->setPosition(sf::Vector2i(300, 0));
 
 	m_windowInfo = new sf::RenderWindow(sf::VideoMode(300, 600), "window info");
 	m_windowInfo->setPosition(sf::Vector2i(0, 0));
+}
+
+Window_SFML::Window_SFML(std::string CURRENT_DIRECTORY):chip_8("",EMU_EMPTY) {
+	this->CURRENT_DIRECTORY = CURRENT_DIRECTORY;
+
+	createWindows();
+	std::cout << "SFML window created\n";
+	createPixels();
+	std::cout << "SFML pixel created\n";
+	createTexts();
+	std::cout << "SFML text created\n";
+	createSound();
+	std::cout << "SFML sound created\n";
+
+	flag = 0;
 }
 
 Window_SFML::Window_SFML(std::string CURRENT_DIRECTORY, std::string romFile,emulatorType type): chip_8(romFile,type) {
@@ -94,12 +109,24 @@ Window_SFML::Window_SFML(std::string CURRENT_DIRECTORY, std::string romFile,emul
 	this->CURRENT_DIRECTORY = CURRENT_DIRECTORY;
 
 	createWindows();
+	std::cout << "SFML window created\n";
 	createPixels();
+	std::cout << "SFML pixel created\n";
 	createTexts();
+	std::cout << "SFML text created\n";
 	createSound();
+	std::cout << "SFML sound created\n";
 
 	flag = 0;
 	
+}
+
+void Window_SFML::setFileName(std::string fileName) {
+	this->chip_8.setRomFile(fileName);
+}
+
+void Window_SFML::setEmuType(emulatorType type) {
+	this->chip_8.setEmuType(type);
 }
 
 #pragma endregion
@@ -293,6 +320,11 @@ void Window_SFML::drawPixels() {
 #pragma endregion
 
 void Window_SFML::run() {
+
+	m_window->create(sf::VideoMode(SCREEN_WIDTH * RESIZE_SCREEN_WIDTH, SCREEN_HEIGHT * RESIZE_SCREEN_HEIGHT), "CHIP8");
+	m_window->setPosition(sf::Vector2i(300, 0));
+	m_windowInfo->create(sf::VideoMode(300, 600), "window info");
+	m_windowInfo->setPosition(sf::Vector2i(0, 0));
 
 	if (!chip_8.init()) {
 		return;

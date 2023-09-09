@@ -42,7 +42,9 @@ enum emulatorType{
 	//for .mbch8 files(binary .mch8 version)
 	EMU_BINARY_ROM,
 	//for .mch8 files
-	EMU_TEXT_ROM
+	EMU_TEXT_ROM,
+	//for error checks
+	EMU_EMPTY
 };
 
 class Chip8
@@ -91,6 +93,9 @@ class Chip8
 	char inputCh8Flag;
 
 	bool init();
+
+	void setEmuType(emulatorType type);
+	void setRomFile(std::string fileName);
 
 private:
 
