@@ -128,39 +128,6 @@ std::vector<uint8_t>* Chip8::loadMachineCode_fromFile(std::string path) {
 	
 }
 
-uint8_t Chip8::toDec(std::string hex){
-
-	//0xFE => FE
-
-	unsigned int dec = std::stoul(hex, nullptr, 16);
-	
-	return (uint8_t)(dec);
-}
-
-std::string Chip8::toBin(int n) {
-	std::string bin = "";
-
-	while (n > 1) {
-
-		bin += std::to_string(n % 2);
-		n /= 2;
-	}
-
-	bin += std::to_string(n);
-
-	std::reverse(bin.begin(), bin.end());
-
-	return bin;
-}
-
-//translate decimal to hex
-std::string Chip8::toHex(uint16_t dec) {
-
-	std::stringstream ss;
-	ss << std::hex << std::uppercase << dec;
-	return ss.str();
-}
-
 void Chip8::setFlag(uint8_t flag) {
 	ch8flag = flag;
 }
@@ -649,8 +616,6 @@ void Chip8::DRW_Dxyn() {
 	Vx = Vx % SCREEN_WIDTH;
 	
 	Vy = Vy % SCREEN_HEIGHT;
-
-	//std::cout << "vx " << toDec(toHex(Vx)) << " vy " << toDec(toHex(Vy)) << "\n";
 
 	uint8_t spriteByte;
 	uint8_t spritePixel;

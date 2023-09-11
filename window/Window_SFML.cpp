@@ -289,25 +289,25 @@ void Window_SFML::updateChip8() {
 
 void Window_SFML::drawTexts() {
 	for (size_t i = 0; i < 16; i++) {
-		regs[i].setString("V" + std::to_string(i) + ":" + chip_8.toHex(chip_8.registerFile[i]));
+		regs[i].setString("V" + std::to_string(i) + ":" + rdx::toHex(chip_8.registerFile[i]));
 		m_windowInfo->draw(regs[i]);
 
 		keyboard[i].setString("Key " + rdx::toHex(i) + ":" + std::to_string( keys[i]));
 		m_windowInfo->draw(keyboard[i]);
 	}
 
-	PC.setString("PC:" + chip_8.toHex(chip_8.programCounter));
+	PC.setString("PC:" + rdx::toHex(chip_8.programCounter));
 	m_windowInfo->draw(PC);
 
-	indexReg.setString("I:" + chip_8.toHex(chip_8.indexRegister));
+	indexReg.setString("I:" + rdx::toHex(chip_8.indexRegister));
 	m_windowInfo->draw(indexReg);
 
-	SP.setString("SP:" + chip_8.toHex(chip_8.stackPointer));
+	SP.setString("SP:" + rdx::toHex(chip_8.stackPointer));
 	m_windowInfo->draw(SP);
 
-	delayTimer.setString("DT:" + chip_8.toHex(chip_8.delayTimer));
+	delayTimer.setString("DT:" + rdx::toHex(chip_8.delayTimer));
 	m_windowInfo->draw(delayTimer);
-	soundTimer.setString("ST:" + chip_8.toHex(chip_8.soundTimer));
+	soundTimer.setString("ST:" + rdx::toHex(chip_8.soundTimer));
 	m_windowInfo->draw(soundTimer);
 }
 

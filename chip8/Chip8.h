@@ -9,9 +9,6 @@
 //for uint8/16 types
 #include <cstdint>
 
-//for toHex func
-#include <sstream>
-
 //file reading
 #include <fstream>
 #include <string>
