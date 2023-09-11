@@ -1,6 +1,16 @@
 # CHIP-8
 classic chip8 (! some opcode names changed)
 
+TODO
+
+   - check ROM loading errors
+   - add cmake file
+   - remove utils func inside of chip8
+   - add better ROMs for testing
+   - add diagram about chip8 I/O relation and flags
+   - move the opcodes to somewhere else
+   - add binary file reader from CHIP_Assembler ?(i dont remember where was func)
+   - release
 
 ```
 .mch8 structure (enum => EMU_TEXT_ROM)
