@@ -1,5 +1,6 @@
-# CHIP-8
-classic chip8 (! some opcode names changed)
+# CHIP-23z
+<s>classic chip8 (! some opcode names changed)</s>
+
 
 TODO
 
@@ -15,6 +16,26 @@ TODO
 
 test image<br>
 ![](diagram/testimage.png)
+```
++---------------------+
+|                     |
+|    CHARSET          |
+|                     |
+|                     |
++---------------------+
+|                     |
+|    CODE             |
+|                     |
+|                     |
++---------------------+
+|    VARIABLES        |
++---------------------+
+|    STACK            |
++---------------------+
+|    DISPLAY          |
++---------------------+
+```
+
 
 ```
 .mch8(machine(code) chip8) structure (enum => EMU_TEXT_ROM)
