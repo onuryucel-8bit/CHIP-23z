@@ -128,6 +128,8 @@ std::vector<uint8_t>* Chip8::loadMachineCode_fromFile(std::string path) {
 	
 }
 
+
+
 void Chip8::setFlag(uint8_t flag) {
 	ch8flag = flag;
 }
@@ -382,11 +384,7 @@ void Chip8::executeCommand() {
 }
 
 void Chip8::CLR_00E0() {
-	for (size_t i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i++){
-		display[i] = 0;
-	}
-
-	ch8flag = 1;
+	
 }
 
 void Chip8::RET_00EE() {

@@ -4,8 +4,8 @@ classic chip8 (! some opcode names changed)
 TODO
 
    - check ROM loading errors
-   - add cmake file
-   - remove utils func inside of chip8
+   - <s>add cmake </s> file (i am newbie at this)
+   - <s>remove utils func inside of chip8</s>
    - add better ROMs for testing
    - add diagram about chip8 I/O relation and flags
    - move the opcodes to somewhere else
@@ -13,7 +13,7 @@ TODO
    - release
 
 ```
-.mch8 structure (enum => EMU_TEXT_ROM)
+.mch8(machine(code) chip8) structure (enum => EMU_TEXT_ROM)
 ROMB
    0x0f,0x0f,0xff...
 ROME
