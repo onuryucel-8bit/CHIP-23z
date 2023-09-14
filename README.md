@@ -10,6 +10,7 @@ TODO
    - add diagram about chip8 I/O relation and flags
    - move the opcodes to somewhere else
    - add binary file reader from CHIP_Assembler ?(i dont remember where was func)
+   - put screen data in RAM
    - release
 
 test image<br>
