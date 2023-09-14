@@ -20,7 +20,6 @@
 #include <vector>
 
 #include "romLoaderCH8.h"
-#include "Commands.h"
 
 #define SCREEN_WIDTH  64
 #define SCREEN_HEIGHT 32
@@ -74,12 +73,6 @@ class Chip8
 	*   5 : update keys
 	*/
 	int update(bool* keys);
-
-	std::string toHex(uint16_t dec);
-
-	uint8_t toDec(std::string hex);
-
-	std::string toBin(int n);
 
 	bool keyMap[16] = {};
 
