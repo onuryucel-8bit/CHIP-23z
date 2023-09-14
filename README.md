@@ -12,6 +12,7 @@ TODO
    - move the opcodes to somewhere else
    - add binary file reader from CHIP_Assembler ?(i dont remember where was func)
    - put screen data in RAM
+   - add clearing different color options (CLS 0 => Clear white CLS B => Clear orange ...)
    - release
 
 test image<br>
