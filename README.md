@@ -3,7 +3,7 @@ classic chip8 (! some opcode names changed)
 
 TODO
 
-   - check ROM loading errors
+   - <s>check ROM loading errors<s>
    - <s>add cmake </s> file (i am newbie at this)
    - <s>remove utils func inside of chip8</s>
    - add better ROMs for testing

@@ -28,21 +28,23 @@ int main(int argc, char* argv[]) {
 
 	Window_SFML window(fileDirectory);
 
-	while (true) {
+	//while (true) {
 
 		std::cout << "Enter emu type\n";
 
 		std::string strEmu;
-		std::cin >> strEmu;
+		//std::cin >> strEmu;
 
 		if (strEmu == "exit" || strEmu == "EXIT") {
-			break;
+			//break;
 		}
 
 		std::cout << "file name with extension\n";
 		std::string fileName;
-		std::cin >> fileName;
+		//std::cin >> fileName;
 
+		strEmu = "EMU_TEXT_ROM";
+		fileName = "./ROMs/TankSprite.mch8";
 		
 
 		emulatorType emutype = strToEnum(strEmu);
@@ -55,6 +57,6 @@ int main(int argc, char* argv[]) {
 			window.setFileName(fileName);
 			window.run();
 		}
-	}
+	//}
 
 }

@@ -56,10 +56,11 @@ int romLoaderCH8::getCharsetData(std::vector<uint8_t>* output_och8) {
 	//get first line of source.och8
 	std::getline(file, line);
 	
-	if (line.substr(0,4) != "ROMB") {
-		std::cout << "ERROR : getCharsetData() : Theres NOT begining of Charset keyword \n";
+	if (line.substr(0, 4) != "ROMB") {
+		printError("getCharsetData(): Expected the beginning of Charset keyword");
 		return -1;
 	}
+
 
 	//012345 <= index
 	//ROMB 0x0f,0xdf,0x2f
@@ -76,8 +77,17 @@ int romLoaderCH8::getCharsetData(std::vector<uint8_t>* output_och8) {
 				sectionEnding = true;
 				break;
 			}
-						
-			(*output_och8)[ramAddress] = rdx::toDec(line.substr(lineIndex, 4));
+
+			try
+			{
+				(*output_och8)[ramAddress] = rdx::toDec(line.substr(lineIndex, 4));
+			}
+			catch (const std::exception&)
+			{
+				printError("rdx::toDec() \n");
+				return -1;				
+			}
+			
 			ramAddress++;
 			lineIndex += 5;
 		}
@@ -129,7 +139,16 @@ int romLoaderCH8::getVariables(std::vector<uint8_t>* output_och8) {
 				varEndIndex++;
 			}
 
-			(*output_och8)[ramAddress] = std::stoi(line.substr(lineIndex, varLength));
+			try
+			{
+				(*output_och8)[ramAddress] = std::stoi(line.substr(lineIndex, varLength));
+			}
+			catch (const std::exception&)
+			{
+				printError("at variable section std::stoi()\n");
+				return -1;
+			}
+			
 			ramAddress--;
 			lineIndex += varLength + 1;//varLength points the "," thats why 1 added
 		}
@@ -168,7 +187,17 @@ int romLoaderCH8::getCodeSection(std::vector<uint8_t>* output_och8, int ramAddre
 				break;
 			}
 
-			(*output_och8)[ramAddress] = rdx::toDec(line.substr(lineIndex, 4));
+
+			try
+			{
+				(*output_och8)[ramAddress] = rdx::toDec(line.substr(lineIndex, 4));
+			}
+			catch (const std::exception&)
+			{
+				printError("at code section rdx::toDec()\n");
+				return -1;
+			}
+			
 			ramAddress++;
 			lineIndex += 5;
 		}
@@ -182,4 +211,8 @@ int romLoaderCH8::getCodeSection(std::vector<uint8_t>* output_och8, int ramAddre
 	file.close();
 
 	return ramAddress;
+}
+
+void romLoaderCH8::printError(const std::string message) {
+	std::cout << "ERROR: " << message;
 }

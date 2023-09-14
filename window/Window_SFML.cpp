@@ -93,13 +93,10 @@ Window_SFML::Window_SFML(std::string CURRENT_DIRECTORY):chip_8("",EMU_EMPTY) {
 	this->CURRENT_DIRECTORY = CURRENT_DIRECTORY;
 
 	createWindows();
-	std::cout << "SFML window created\n";
 	createPixels();
-	std::cout << "SFML pixel created\n";
 	createTexts();
-	std::cout << "SFML text created\n";
 	createSound();
-	std::cout << "SFML sound created\n";
+
 
 	flag = 0;
 }
@@ -109,14 +106,10 @@ Window_SFML::Window_SFML(std::string CURRENT_DIRECTORY, std::string romFile,emul
 	this->CURRENT_DIRECTORY = CURRENT_DIRECTORY;
 
 	createWindows();
-	std::cout << "SFML window created\n";
 	createPixels();
-	std::cout << "SFML pixel created\n";
 	createTexts();
-	std::cout << "SFML text created\n";
 	createSound();
-	std::cout << "SFML sound created\n";
-
+	
 	flag = 0;
 	
 }

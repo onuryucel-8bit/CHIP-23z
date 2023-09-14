@@ -26,6 +26,8 @@ public:
 
 private:
 	
+	void printError(const std::string message);
+
 	std::string path;
 	std::ifstream file;
 
